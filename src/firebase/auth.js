@@ -3,6 +3,7 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   setPersistence,
@@ -38,4 +39,8 @@ export function signUpWithEmail({ name, email, password }) {
 
 export function logInWithEmail({ email, password }) {
   return signInWithEmailAndPassword(auth, email, password);
+}
+
+export function resetPassword(email) {
+  return sendPasswordResetEmail(auth, email);
 }

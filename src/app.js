@@ -2,6 +2,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import {
   auth,
   logInWithEmail,
+  resetPassword,
   signInWithGoogle,
   signOutUser,
   signUpWithEmail
@@ -104,6 +105,7 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode) {
             </label>
             <button class="action-button" type="submit">${emailAuthViewModel.submitLabel}</button>
           </form>
+          ${emailAuthViewModel.mode === 'login' ? '<button id="reset-password-button" class="text-button" type="button">Reset password</button>' : ''}
           <p id="email-auth-feedback" class="form-feedback" aria-live="polite"></p>
           <div class="auth-divider"><span>or</span></div>
           <button id="google-sign-in-button" class="action-button secondary-button" type="button">Continue with Google</button>
@@ -133,6 +135,15 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode) {
   root.querySelector('#email-auth-form')?.addEventListener('submit', (event) => {
     event.preventDefault();
     void handleEmailAuth(root, emailAuthViewModel.mode, event.currentTarget);
+  });
+
+  root.querySelector('#reset-password-button')?.addEventListener('click', () => {
+    const form = root.querySelector('#email-auth-form');
+    if (!(form instanceof HTMLFormElement)) {
+      return;
+    }
+
+    void handlePasswordReset(root, form);
   });
 
   root.querySelector('#google-sign-in-button')?.addEventListener('click', async () => {
@@ -256,6 +267,30 @@ async function loadPublicRows(root) {
         <p>Failed to load public rows. Check Firebase configuration and Firestore data.</p>
       </div>
     `;
+  }
+}
+
+async function handlePasswordReset(root, form) {
+  const feedback = root.querySelector('#email-auth-feedback');
+  if (!feedback) {
+    return;
+  }
+
+  const formData = new FormData(form);
+  const email = String(formData.get('email') ?? '').trim();
+
+  if (!email) {
+    feedback.textContent = 'Enter your email first, then click reset password.';
+    return;
+  }
+
+  feedback.textContent = 'Sending password reset email...';
+
+  try {
+    await resetPassword(email);
+    feedback.textContent = 'Password reset email sent. Check your inbox.';
+  } catch (error) {
+    feedback.textContent = getAuthErrorMessage(error);
   }
 }
 
@@ -424,6 +459,8 @@ function getAuthErrorMessage(error) {
   switch (code) {
     case 'auth/email-already-in-use':
       return 'That email is already registered. Try logging in instead.';
+    case 'auth/invalid-email':
+      return 'Enter a valid email address.';
     case 'auth/invalid-credential':
     case 'auth/invalid-login-credentials':
     case 'auth/wrong-password':
