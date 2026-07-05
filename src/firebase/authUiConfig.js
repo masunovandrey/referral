@@ -1,4 +1,4 @@
-import { EmailAuthProvider, GithubAuthProvider, GoogleAuthProvider } from 'firebase/auth';
+import { EmailAuthProvider, GoogleAuthProvider } from 'firebase/auth';
 
 export function createUiConfig(onSignedIn) {
   return {
@@ -11,8 +11,7 @@ export function createUiConfig(onSignedIn) {
         customParameters: {
           prompt: 'select_account'
         }
-      },
-      GithubAuthProvider.PROVIDER_ID
+      }
     ],
     callbacks: {
       signInSuccessWithAuthResult: () => {

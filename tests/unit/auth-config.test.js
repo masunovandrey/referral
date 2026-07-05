@@ -7,10 +7,9 @@ describe('createUiConfig', () => {
 
     expect(config.signInFlow).toBe('popup');
     expect(config.signInSuccessUrl).toBe('#/app');
-    expect(config.signInOptions).toHaveLength(3);
+    expect(config.signInOptions).toHaveLength(2);
     expect(config.signInOptions[0]).toBe('password');
     expect(config.signInOptions[1]).toMatchObject({ provider: 'google.com' });
-    expect(config.signInOptions[2]).toBe('github.com');
   });
 
   it('invokes the redirect callback and suppresses firebaseui navigation', () => {
