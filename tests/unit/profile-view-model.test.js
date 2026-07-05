@@ -12,9 +12,9 @@ describe('buildProfileViewModel', () => {
     ).toEqual({
       userId: 'user-a',
       identityLabel: 'user@example.com',
-      emptyStateTitle: 'No personal rows yet',
-      emptyStateDescription: 'Create your first private row to start building your personal dataset.',
-      submitButtonLabel: 'Add row'
+      emptyStateTitle: 'No referral entries yet',
+      emptyStateDescription: 'Create your first referral entry to build your personal referral collection.',
+      submitButtonLabel: 'Add referral entry'
     });
   });
 
@@ -27,9 +27,9 @@ describe('buildProfileViewModel', () => {
     ).toEqual({
       userId: 'user-a',
       identityLabel: 'Example User',
-      emptyStateTitle: 'No personal rows yet',
-      emptyStateDescription: 'Create your first private row to start building your personal dataset.',
-      submitButtonLabel: 'Add row'
+      emptyStateTitle: 'No referral entries yet',
+      emptyStateDescription: 'Create your first referral entry to build your personal referral collection.',
+      submitButtonLabel: 'Add referral entry'
     });
   });
 });

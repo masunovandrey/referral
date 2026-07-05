@@ -190,15 +190,19 @@ function renderProfilePage(root, user) {
           </div>
         </section>
         <section class="profile-section">
-          <h2>Add a personal row</h2>
+          <h2>Add a referral entry</h2>
           <form id="private-row-form" class="profile-form">
             <label class="field">
-              <span>Title</span>
-              <input name="title" type="text" autocomplete="off" />
+              <span>Company name</span>
+              <input name="companyName" type="text" autocomplete="organization" />
             </label>
             <label class="field">
-              <span>Description</span>
-              <textarea name="description" rows="4"></textarea>
+              <span>Referral link</span>
+              <input name="referralLink" type="url" autocomplete="url" />
+            </label>
+            <label class="field">
+              <span>Bonus description</span>
+              <textarea name="bonusDescription" rows="4"></textarea>
             </label>
             <button class="action-button" type="submit">${escapeHtml(viewModel.submitButtonLabel)}</button>
           </form>
@@ -302,23 +306,24 @@ async function handleCreateUserRow(root, userId, form) {
 
   const formData = new FormData(form);
   const input = {
-    title: formData.get('title'),
-    description: formData.get('description')
+    companyName: formData.get('companyName'),
+    referralLink: formData.get('referralLink'),
+    bonusDescription: formData.get('bonusDescription')
   };
 
-  feedback.textContent = 'Saving personal row...';
+  feedback.textContent = 'Saving referral entry...';
 
   try {
     await createUserRow(userId, input);
     form.reset();
-    feedback.textContent = 'Personal row created.';
+    feedback.textContent = 'Referral entry created.';
     await loadPrivateRows(root, {
       emptyStateTitle: 'No personal rows yet',
       emptyStateDescription: 'Create your first private row to start building your personal dataset.',
       userId
     });
   } catch (error) {
-    feedback.textContent = 'Failed to create personal row. Check authentication and Firestore access.';
+    feedback.textContent = 'Failed to create referral entry. Check authentication and Firestore access.';
   }
 }
 
@@ -358,10 +363,10 @@ async function loadPrivateRows(root, viewModel) {
   }
 
   container.innerHTML = `
-    <div class="placeholder">
-      <h3>Loading personal rows...</h3>
-      <p>Fetching your private data from Firestore.</p>
-    </div>
+      <div class="placeholder">
+        <h3>Loading referral entries...</h3>
+        <p>Fetching your private data from Firestore.</p>
+      </div>
   `;
 
   try {
@@ -374,7 +379,7 @@ async function loadPrivateRows(root, viewModel) {
   } catch (error) {
     container.innerHTML = `
       <div class="placeholder">
-        <h3>Failed to load personal rows</h3>
+        <h3>Failed to load referral entries</h3>
         <p>Check authentication and Firestore access, then try again.</p>
       </div>
     `;
@@ -414,22 +419,23 @@ async function handleUpdateUserRow(root, userId, rowId, form) {
 
   const formData = new FormData(form);
   const input = {
-    title: formData.get('title'),
-    description: formData.get('description')
+    companyName: formData.get('companyName'),
+    referralLink: formData.get('referralLink'),
+    bonusDescription: formData.get('bonusDescription')
   };
 
   feedback.textContent = 'Saving changes...';
 
   try {
     await updateUserRow(userId, rowId, input);
-    feedback.textContent = 'Personal row updated.';
+    feedback.textContent = 'Referral entry updated.';
     await loadPrivateRows(root, {
       emptyStateTitle: 'No personal rows yet',
       emptyStateDescription: 'Create your first private row to start building your personal dataset.',
       userId
     });
   } catch (error) {
-    feedback.textContent = 'Failed to update personal row. Check authentication and Firestore access.';
+    feedback.textContent = 'Failed to update referral entry. Check authentication and Firestore access.';
   }
 }
 
@@ -449,7 +455,7 @@ async function handleDeleteUserRow(root, userId, rowId, form) {
       userId
     });
   } catch (error) {
-    feedback.textContent = 'Failed to delete personal row. Check authentication and Firestore access.';
+    feedback.textContent = 'Failed to delete referral entry. Check authentication and Firestore access.';
   }
 }
 

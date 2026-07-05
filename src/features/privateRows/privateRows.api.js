@@ -24,6 +24,7 @@ export async function createUserRow(uid, input) {
 
   return addDoc(collection(db, `users/${uid}/rows`), {
     ...rowInput,
+    views: 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   });

@@ -5,34 +5,39 @@ import {
 } from '../../src/features/privateRows/privateRows.model.js';
 
 describe('buildPrivateRowInput', () => {
-  it('trims title and description for create payloads', () => {
+  it('trims referral row fields for create payloads', () => {
     expect(
       buildPrivateRowInput({
-        title: '  First row  ',
-        description: '  Personal note  '
+        companyName: '  Example Company  ',
+        referralLink: '  https://example.com/referral  ',
+        bonusDescription: '  Personal bonus note  '
       })
     ).toEqual({
-      title: 'First row',
-      description: 'Personal note'
+      companyName: 'Example Company',
+      referralLink: 'https://example.com/referral',
+      bonusDescription: 'Personal bonus note'
     });
   });
 
   it('falls back to empty strings for missing fields', () => {
     expect(buildPrivateRowInput({})).toEqual({
-      title: '',
-      description: ''
+      companyName: '',
+      referralLink: '',
+      bonusDescription: ''
     });
   });
 
   it('preserves normalized payload shape for edit inputs', () => {
     expect(
       buildPrivateRowInput({
-        title: '  Updated title  ',
-        description: '  Updated description  '
+        companyName: '  Updated Company  ',
+        referralLink: '  https://example.com/updated  ',
+        bonusDescription: '  Updated bonus  '
       })
     ).toEqual({
-      title: 'Updated title',
-      description: 'Updated description'
+      companyName: 'Updated Company',
+      referralLink: 'https://example.com/updated',
+      bonusDescription: 'Updated bonus'
     });
   });
 });
@@ -44,21 +49,25 @@ describe('normalizePrivateRows', () => {
         {
           id: 'row-a',
           data: () => ({
-            title: 'Private row',
-            description: 'Owned by the current user'
+            companyName: 'Example Company',
+            referralLink: 'https://example.com/referral',
+            bonusDescription: 'Owned by the current user',
+            views: 12
           })
         }
       ])
     ).toEqual([
       {
         id: 'row-a',
-        title: 'Private row',
-        description: 'Owned by the current user'
+        companyName: 'Example Company',
+        referralLink: 'https://example.com/referral',
+        bonusDescription: 'Owned by the current user',
+        views: 12
       }
     ]);
   });
 
-  it('falls back to empty strings for missing row text', () => {
+  it('falls back to empty strings and zero views for missing row data', () => {
     expect(
       normalizePrivateRows([
         {
@@ -69,8 +78,10 @@ describe('normalizePrivateRows', () => {
     ).toEqual([
       {
         id: 'row-a',
-        title: '',
-        description: ''
+        companyName: '',
+        referralLink: '',
+        bonusDescription: '',
+        views: 0
       }
     ]);
   });

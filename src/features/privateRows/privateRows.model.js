@@ -1,7 +1,8 @@
 export function buildPrivateRowInput(input) {
   return {
-    title: typeof input.title === 'string' ? input.title.trim() : '',
-    description: typeof input.description === 'string' ? input.description.trim() : ''
+    companyName: typeof input.companyName === 'string' ? input.companyName.trim() : '',
+    referralLink: typeof input.referralLink === 'string' ? input.referralLink.trim() : '',
+    bonusDescription: typeof input.bonusDescription === 'string' ? input.bonusDescription.trim() : ''
   };
 }
 
@@ -18,8 +19,10 @@ export function normalizePrivateRows(rows) {
 
     return {
       id: row.id,
-      title: typeof data.title === 'string' ? data.title : '',
-      description: typeof data.description === 'string' ? data.description : ''
+      companyName: typeof data.companyName === 'string' ? data.companyName : '',
+      referralLink: typeof data.referralLink === 'string' ? data.referralLink : '',
+      bonusDescription: typeof data.bonusDescription === 'string' ? data.bonusDescription : '',
+      views: Number.isInteger(data.views) ? data.views : 0
     };
   });
 }
