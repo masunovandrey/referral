@@ -1,5 +1,12 @@
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, signOutUser, startAuthUi, resetAuthUi } from './firebase/auth.js';
+import {
+  auth,
+  logInWithEmail,
+  signInWithGoogle,
+  signOutUser,
+  signUpWithEmail
+} from './firebase/auth.js';
+import { buildEmailAuthViewModel } from './features/auth/emailAuthViewModel.js';
 import { buildHomeViewModel } from './features/home/homeViewModel.js';
 import {
   createUserRow,
@@ -15,6 +22,7 @@ import { getHashPath, navigateTo, resolveRoute, routes } from './router.js';
 
 export function initApp(root) {
   let currentUser = auth.currentUser;
+  let emailAuthMode = 'login';
 
   const render = () => {
     const nextRoute = resolveRoute(window.location.hash, Boolean(currentUser));
@@ -26,7 +34,10 @@ export function initApp(root) {
     }
 
     if (nextRoute === routes.home) {
-      renderHomePage(root, currentUser);
+      renderHomePage(root, currentUser, emailAuthMode, (nextMode) => {
+        emailAuthMode = nextMode;
+        render();
+      });
       return;
     }
 
@@ -42,8 +53,9 @@ export function initApp(root) {
   render();
 }
 
-function renderHomePage(root, user) {
+function renderHomePage(root, user, emailAuthMode, setEmailAuthMode) {
   const viewModel = buildHomeViewModel(user);
+  const emailAuthViewModel = buildEmailAuthViewModel(emailAuthMode);
   const publicDataButtons = viewModel.publicDataButtons
     .map(
       (button) =>
@@ -70,13 +82,37 @@ function renderHomePage(root, user) {
           <h2>Public data placeholder</h2>
           <p>Public Firestore rows will be shown here in the next step.</p>
         </div>
-        <div id="firebaseui-auth-container"></div>
+        <section class="auth-section">
+          <div class="auth-section-header">
+            <h2>${emailAuthViewModel.title}</h2>
+            <button id="toggle-email-auth-mode" class="text-button" type="button">${emailAuthViewModel.toggleLabel}</button>
+          </div>
+          <form id="email-auth-form" class="profile-form">
+            ${emailAuthViewModel.showNameField ? `
+              <label class="field">
+                <span>Name</span>
+                <input name="name" type="text" autocomplete="name" />
+              </label>
+            ` : ''}
+            <label class="field">
+              <span>Email</span>
+              <input name="email" type="email" autocomplete="email" />
+            </label>
+            <label class="field">
+              <span>Password</span>
+              <input name="password" type="password" autocomplete="${emailAuthViewModel.mode === 'signup' ? 'new-password' : 'current-password'}" />
+            </label>
+            <button class="action-button" type="submit">${emailAuthViewModel.submitLabel}</button>
+          </form>
+          <p id="email-auth-feedback" class="form-feedback" aria-live="polite"></p>
+          <div class="auth-divider"><span>or</span></div>
+          <button id="google-sign-in-button" class="action-button secondary-button" type="button">Continue with Google</button>
+        </section>
       </section>
     </main>
   `;
 
   if (viewModel.isAuthenticated) {
-    resetAuthUi();
     root.querySelector('#logout-button')?.addEventListener('click', async () => {
       await signOutUser();
       navigateTo(routes.home);
@@ -90,8 +126,29 @@ function renderHomePage(root, user) {
     return;
   }
 
-  startAuthUi('#firebaseui-auth-container', () => {
-    navigateTo(routes.profile);
+  root.querySelector('#toggle-email-auth-mode')?.addEventListener('click', () => {
+    setEmailAuthMode(emailAuthViewModel.mode === 'login' ? 'signup' : 'login');
+  });
+
+  root.querySelector('#email-auth-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    void handleEmailAuth(root, emailAuthViewModel.mode, event.currentTarget);
+  });
+
+  root.querySelector('#google-sign-in-button')?.addEventListener('click', async () => {
+    const feedback = root.querySelector('#email-auth-feedback');
+    if (feedback) {
+      feedback.textContent = 'Signing in with Google...';
+    }
+
+    try {
+      await signInWithGoogle();
+      navigateTo(routes.profile);
+    } catch (error) {
+      if (feedback) {
+        feedback.textContent = getAuthErrorMessage(error);
+      }
+    }
   });
 
   wirePublicDataButtons(root);
@@ -99,7 +156,6 @@ function renderHomePage(root, user) {
 
 function renderProfilePage(root, user) {
   const viewModel = buildProfileViewModel(user);
-  resetAuthUi();
 
   root.innerHTML = `
     <main class="layout">
@@ -231,6 +287,35 @@ async function handleCreateUserRow(root, userId, form) {
   }
 }
 
+async function handleEmailAuth(root, mode, form) {
+  const feedback = root.querySelector('#email-auth-feedback');
+  if (!feedback) {
+    return;
+  }
+
+  const formData = new FormData(form);
+  const input = {
+    name: String(formData.get('name') ?? '').trim(),
+    email: String(formData.get('email') ?? '').trim(),
+    password: String(formData.get('password') ?? '')
+  };
+
+  feedback.textContent = mode === 'signup' ? 'Creating account...' : 'Logging in...';
+
+  try {
+    if (mode === 'signup') {
+      await signUpWithEmail(input);
+    } else {
+      await logInWithEmail(input);
+    }
+
+    form.reset();
+    navigateTo(routes.profile);
+  } catch (error) {
+    feedback.textContent = getAuthErrorMessage(error);
+  }
+}
+
 async function loadPrivateRows(root, viewModel) {
   const container = root.querySelector('#private-rows-container');
   if (!container) {
@@ -330,5 +415,25 @@ async function handleDeleteUserRow(root, userId, rowId, form) {
     });
   } catch (error) {
     feedback.textContent = 'Failed to delete personal row. Check authentication and Firestore access.';
+  }
+}
+
+function getAuthErrorMessage(error) {
+  const code = error && typeof error === 'object' && 'code' in error ? error.code : '';
+
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return 'That email is already registered. Try logging in instead.';
+    case 'auth/invalid-credential':
+    case 'auth/invalid-login-credentials':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      return 'Email or password is incorrect.';
+    case 'auth/weak-password':
+      return 'Password should be at least 6 characters.';
+    case 'auth/popup-closed-by-user':
+      return 'Google sign-in was cancelled.';
+    default:
+      return 'Authentication failed. Check your details and try again.';
   }
 }

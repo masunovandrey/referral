@@ -95,6 +95,15 @@ h1 {
   background: #52606d;
 }
 
+.text-button {
+  border: 0;
+  background: transparent;
+  color: #9a3412;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
 .danger-button {
   background: #b42318;
 }
@@ -102,6 +111,39 @@ h1 {
 .placeholder {
   border-top: 1px solid rgba(31, 41, 51, 0.1);
   padding-top: 24px;
+}
+
+.auth-section {
+  border-top: 1px solid rgba(31, 41, 51, 0.1);
+  margin-top: 24px;
+  padding-top: 24px;
+}
+
+.auth-section-header {
+  align-items: start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.auth-section-header h2 {
+  margin-bottom: 0;
+}
+
+.auth-divider {
+  align-items: center;
+  color: #52606d;
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  border-top: 1px solid rgba(31, 41, 51, 0.1);
+  content: '';
+  flex: 1;
 }
 
 .profile-section + .profile-section {
