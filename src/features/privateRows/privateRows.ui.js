@@ -1,7 +1,8 @@
-import { buildPrivateRowActions } from './privateRows.model.js';
+import { buildPrivateRowActions, referralCategories } from './privateRows.model.js';
 
 export function renderPrivateRows(rows, emptyState) {
   const actions = buildPrivateRowActions();
+  const categoryOptions = buildCategoryOptions();
 
   if (rows.length === 0) {
     return `
@@ -22,6 +23,13 @@ export function renderPrivateRows(rows, emptyState) {
                 <label class="field">
                   <span>Company name</span>
                   <input name="companyName" type="text" value="${escapeHtmlAttribute(row.companyName)}" autocomplete="organization" />
+                </label>
+                <label class="field">
+                  <span>Category</span>
+                  <select name="category" required>
+                    <option value="" disabled ${row.category ? '' : 'selected'}>Select category</option>
+                    ${categoryOptions(row.category)}
+                  </select>
                 </label>
                 <label class="field">
                   <span>Referral link</span>
@@ -60,4 +68,13 @@ function escapeHtml(value) {
 
 function escapeHtmlAttribute(value) {
   return escapeHtml(value);
+}
+
+function buildCategoryOptions(selectedCategory = '') {
+  return referralCategories
+    .map((category) => {
+      const selected = category === selectedCategory ? ' selected' : '';
+      return `<option value="${escapeHtmlAttribute(category)}"${selected}>${escapeHtml(category)}</option>`;
+    })
+    .join('');
 }

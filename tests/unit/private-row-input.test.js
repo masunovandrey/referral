@@ -9,11 +9,13 @@ describe('buildPrivateRowInput', () => {
     expect(
       buildPrivateRowInput({
         companyName: '  Example Company  ',
+        category: '  fintech  ',
         referralLink: '  https://example.com/referral  ',
         bonusDescription: '  Personal bonus note  '
       })
     ).toEqual({
       companyName: 'Example Company',
+      category: 'fintech',
       referralLink: 'https://example.com/referral',
       bonusDescription: 'Personal bonus note'
     });
@@ -22,6 +24,7 @@ describe('buildPrivateRowInput', () => {
   it('falls back to empty strings for missing fields', () => {
     expect(buildPrivateRowInput({})).toEqual({
       companyName: '',
+      category: '',
       referralLink: '',
       bonusDescription: ''
     });
@@ -31,11 +34,13 @@ describe('buildPrivateRowInput', () => {
     expect(
       buildPrivateRowInput({
         companyName: '  Updated Company  ',
+        category: '  travel  ',
         referralLink: '  https://example.com/updated  ',
         bonusDescription: '  Updated bonus  '
       })
     ).toEqual({
       companyName: 'Updated Company',
+      category: 'travel',
       referralLink: 'https://example.com/updated',
       bonusDescription: 'Updated bonus'
     });
@@ -50,6 +55,7 @@ describe('normalizePrivateRows', () => {
           id: 'row-a',
           data: () => ({
             companyName: 'Example Company',
+            category: 'fintech',
             referralLink: 'https://example.com/referral',
             bonusDescription: 'Owned by the current user',
             views: 12
@@ -60,6 +66,7 @@ describe('normalizePrivateRows', () => {
       {
         id: 'row-a',
         companyName: 'Example Company',
+        category: 'fintech',
         referralLink: 'https://example.com/referral',
         bonusDescription: 'Owned by the current user',
         views: 12
@@ -79,6 +86,7 @@ describe('normalizePrivateRows', () => {
       {
         id: 'row-a',
         companyName: '',
+        category: '',
         referralLink: '',
         bonusDescription: '',
         views: 0

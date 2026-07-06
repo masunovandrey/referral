@@ -165,6 +165,7 @@ h1 {
 }
 
 .field input,
+.field select,
 .field textarea {
   width: 100%;
   border: 1px solid rgba(31, 41, 51, 0.18);

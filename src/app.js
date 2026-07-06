@@ -16,6 +16,7 @@ import {
   updateUserRow
 } from './features/privateRows/privateRows.api.js';
 import { buildProfileViewModel } from './features/privateRows/profileViewModel.js';
+import { referralCategories } from './features/privateRows/privateRows.model.js';
 import { renderPrivateRows } from './features/privateRows/privateRows.ui.js';
 import { listPublicRows } from './features/publicRows/publicRows.api.js';
 import { renderPublicRows } from './features/publicRows/publicRows.ui.js';
@@ -167,6 +168,7 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode) {
 
 function renderProfilePage(root, user) {
   const viewModel = buildProfileViewModel(user);
+  const categoryOptions = buildCategoryOptions();
 
   root.innerHTML = `
     <main class="layout">
@@ -195,6 +197,13 @@ function renderProfilePage(root, user) {
             <label class="field">
               <span>Company name</span>
               <input name="companyName" type="text" autocomplete="organization" />
+            </label>
+            <label class="field">
+              <span>Category</span>
+              <select name="category" required>
+                <option value="" selected disabled>Select category</option>
+                ${categoryOptions}
+              </select>
             </label>
             <label class="field">
               <span>Referral link</span>
@@ -307,6 +316,7 @@ async function handleCreateUserRow(root, userId, form) {
   const formData = new FormData(form);
   const input = {
     companyName: formData.get('companyName'),
+    category: formData.get('category'),
     referralLink: formData.get('referralLink'),
     bonusDescription: formData.get('bonusDescription')
   };
@@ -420,6 +430,7 @@ async function handleUpdateUserRow(root, userId, rowId, form) {
   const formData = new FormData(form);
   const input = {
     companyName: formData.get('companyName'),
+    category: formData.get('category'),
     referralLink: formData.get('referralLink'),
     bonusDescription: formData.get('bonusDescription')
   };
@@ -479,4 +490,13 @@ function getAuthErrorMessage(error) {
     default:
       return 'Authentication failed. Check your details and try again.';
   }
+}
+
+function buildCategoryOptions(selectedCategory = '') {
+  return referralCategories
+    .map((category) => {
+      const selected = category === selectedCategory ? ' selected' : '';
+      return `<option value="${escapeHtml(category)}"${selected}>${escapeHtml(category)}</option>`;
+    })
+    .join('');
 }
