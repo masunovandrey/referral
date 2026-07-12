@@ -274,6 +274,7 @@ async function loadPublicRows(root) {
     const rows = await listPublicRows();
     container.outerHTML = `<div id="public-data-container">${renderPublicRows(rows)}</div>`;
   } catch (error) {
+    console.error('Failed to load public rows:', error);
     container.innerHTML = `
       <div class="placeholder">
         <h2>Public data</h2>
@@ -333,6 +334,7 @@ async function handleCreateUserRow(root, userId, form) {
       userId
     });
   } catch (error) {
+    console.error('Failed to create referral entry:', error);
     feedback.textContent = 'Failed to create referral entry. Check authentication and Firestore access.';
   }
 }
@@ -387,6 +389,7 @@ async function loadPrivateRows(root, viewModel) {
     });
     wirePrivateRowEditForms(root, viewModel.userId);
   } catch (error) {
+    console.error('Failed to load private rows:', error);
     container.innerHTML = `
       <div class="placeholder">
         <h3>Failed to load referral entries</h3>
