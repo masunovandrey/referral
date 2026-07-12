@@ -2,7 +2,7 @@ import { buildPrivateRowActions, referralCategories } from './privateRows.model.
 
 export function renderPrivateRows(rows, emptyState) {
   const actions = buildPrivateRowActions();
-  const categoryOptions = buildCategoryOptions();
+  const categoryOptions = buildCategoryOptions;
 
   if (rows.length === 0) {
     return `
