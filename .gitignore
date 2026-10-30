@@ -4,3 +4,6 @@ dist
 .env.local
 .env.*.local
 .firebase
+*.log
+.DS_Store
+coverage
