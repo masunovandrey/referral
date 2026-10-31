@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   attachPublicRowClicks,
   buildPrivateRowInput,
-  normalizePrivateRows
+  normalizePrivateRows,
+  validatePrivateRowInput
 } from '../../src/features/privateRows/privateRows.model.js';
 
 describe('buildPrivateRowInput', () => {
@@ -133,6 +134,74 @@ describe('normalizePrivateRows', () => {
         clicks: 0
       }
     ]);
+  });
+});
+
+describe('validatePrivateRowInput', () => {
+  it('accepts a complete valid row', () => {
+    expect(
+      validatePrivateRowInput({
+        companyName: 'Example Company',
+        category: 'fintech',
+        referralLink: 'https://example.com/referral',
+        bonusDescription: 'Bonus details'
+      })
+    ).toEqual({
+      isValid: true,
+      errors: {
+        companyName: '',
+        category: '',
+        referralLink: '',
+        bonusDescription: ''
+      }
+    });
+  });
+
+  it('reports missing required fields and invalid URLs', () => {
+    expect(
+      validatePrivateRowInput({
+        companyName: '  ',
+        category: '',
+        referralLink: 'example.com/referral',
+        bonusDescription: ''
+      })
+    ).toEqual({
+      isValid: false,
+      errors: {
+        companyName: 'Company name is required.',
+        category: 'Select a category.',
+        referralLink: 'Referral link must start with http:// or https://.',
+        bonusDescription: ''
+      }
+    });
+  });
+
+  it('reports missing referral links separately', () => {
+    expect(
+      validatePrivateRowInput({
+        companyName: 'Example Company',
+        category: 'travel',
+        referralLink: '',
+        bonusDescription: ''
+      }).errors.referralLink
+    ).toBe('Referral link is required.');
+  });
+
+  it('reports fields that exceed Firestore rule limits', () => {
+    const result = validatePrivateRowInput({
+      companyName: 'a'.repeat(121),
+      category: 'b'.repeat(81),
+      referralLink: `https://example.com/${'a'.repeat(2048)}`,
+      bonusDescription: 'c'.repeat(1001)
+    });
+
+    expect(result.isValid).toBe(false);
+    expect(result.errors).toEqual({
+      companyName: 'Company name must be 120 characters or fewer.',
+      category: 'Category must be 80 characters or fewer.',
+      referralLink: 'Referral link must be 2048 characters or fewer.',
+      bonusDescription: 'Bonus description must be 1000 characters or fewer.'
+    });
   });
 });
 

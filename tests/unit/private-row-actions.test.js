@@ -5,6 +5,8 @@ describe('buildPrivateRowActions', () => {
   it('returns the expected row-level action labels', () => {
     expect(buildPrivateRowActions()).toEqual({
       saveLabel: 'Save changes',
+      cancelLabel: 'Cancel',
+      editLabel: 'Edit',
       deleteLabel: 'Delete row',
       publishLabel: 'Publish',
       unpublishLabel: 'Unpublish'

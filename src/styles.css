@@ -191,6 +191,29 @@ h1 {
   color: #52606d;
 }
 
+.field-error {
+  display: block;
+  color: #b91c1c;
+  min-height: 1em;
+}
+
+.profile-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 10;
+  max-width: min(360px, calc(100vw - 48px));
+  border-radius: 8px;
+  background: #1f2933;
+  padding: 12px 16px;
+  color: #fff;
+  box-shadow: 0 12px 32px rgba(31, 41, 51, 0.24);
+}
+
+.profile-toast[hidden] {
+  display: none;
+}
+
 .private-row-list {
   display: grid;
   gap: 16px;
@@ -203,19 +226,55 @@ h1 {
   padding: 16px;
 }
 
+.private-row-view[hidden],
+.private-row-edit-form[hidden] {
+  display: none;
+}
+
+.private-row-company {
+  margin: 0 0 12px;
+}
+
+.private-row-details {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.private-row-details dt {
+  color: #52606d;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.private-row-details dd {
+  margin: 2px 0 0;
+  word-break: break-word;
+}
+
+.private-row-details a {
+  color: #9a3412;
+  word-break: break-all;
+}
+
 .private-row-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
 .row-meta {
   color: #52606d;
-  margin: 0;
+  margin: 0 0 12px;
 }
 
 .private-row-preview a {
   color: #9a3412;
   word-break: break-all;
+}
+
+.muted {
+  color: #52606d;
 }
 
 .public-rows {

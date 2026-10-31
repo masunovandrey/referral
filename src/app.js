@@ -21,8 +21,17 @@ import {
   updateUserRow
 } from './features/privateRows/privateRows.api.js';
 import { buildProfileViewModel } from './features/privateRows/profileViewModel.js';
-import { referralCategories } from './features/privateRows/privateRows.model.js';
-import { renderPrivateRows } from './features/privateRows/privateRows.ui.js';
+import {
+  buildPrivateRowInput,
+  referralCategories,
+  validatePrivateRowInput
+} from './features/privateRows/privateRows.model.js';
+import {
+  renderPrivateRowCard,
+  renderPrivateRows,
+  renderPrivateRowsEmptyState,
+  setRowEditMode
+} from './features/privateRows/privateRows.ui.js';
 import {
   incrementPublicRowClicks,
   listPublicRows
@@ -33,6 +42,8 @@ import {
 } from './features/publicRows/publicRows.model.js';
 import { renderPublicRows } from './features/publicRows/publicRows.ui.js';
 import { getHashPath, navigateTo, resolveRoute, routes } from './router.js';
+
+let profileToastTimer;
 
 export function initApp(root) {
   let currentUser = auth.currentUser;
@@ -229,6 +240,7 @@ function renderProfilePage(root, user) {
             <label class="field">
               <span>Company name</span>
               <input name="companyName" type="text" autocomplete="organization" />
+              <small class="field-error" data-role="companyName-error"></small>
             </label>
             <label class="field">
               <span>Category</span>
@@ -236,20 +248,23 @@ function renderProfilePage(root, user) {
                 <option value="" selected disabled>Select category</option>
                 ${categoryOptions}
               </select>
+              <small class="field-error" data-role="category-error"></small>
             </label>
             <label class="field">
               <span>Referral link</span>
               <input name="referralLink" type="url" autocomplete="url" />
+              <small class="field-error" data-role="referralLink-error"></small>
             </label>
             <label class="field">
               <span>Bonus description</span>
               <textarea name="bonusDescription" rows="4"></textarea>
+              <small class="field-error" data-role="bonusDescription-error"></small>
             </label>
             <button class="action-button" type="submit">${escapeHtml(viewModel.submitButtonLabel)}</button>
           </form>
-          <p id="private-row-feedback" class="form-feedback" aria-live="polite"></p>
         </section>
       </section>
+      <div id="profile-toast" class="profile-toast" role="status" aria-live="polite" hidden></div>
     </main>
   `;
 
@@ -262,10 +277,13 @@ function renderProfilePage(root, user) {
     navigateTo(routes.home);
   });
 
-  root.querySelector('#private-row-form')?.addEventListener('submit', (event) => {
+  const createForm = root.querySelector('#private-row-form');
+  createForm?.addEventListener('submit', (event) => {
     event.preventDefault();
-    void handleCreateUserRow(root, viewModel.userId, event.currentTarget);
+    void handleCreateUserRow(root, viewModel, event.currentTarget);
   });
+  createForm?.addEventListener('input', handlePrivateRowsInput);
+  createForm?.addEventListener('change', handlePrivateRowsInput);
 
   void loadPrivateRows(root, viewModel);
 }
@@ -373,12 +391,7 @@ async function handlePasswordReset(root, form) {
   }
 }
 
-async function handleCreateUserRow(root, userId, form) {
-  const feedback = root.querySelector('#private-row-feedback');
-  if (!feedback) {
-    return;
-  }
-
+async function handleCreateUserRow(root, viewModel, form) {
   const formData = new FormData(form);
   const input = {
     companyName: formData.get('companyName'),
@@ -386,21 +399,39 @@ async function handleCreateUserRow(root, userId, form) {
     referralLink: formData.get('referralLink'),
     bonusDescription: formData.get('bonusDescription')
   };
+  const validation = validatePrivateRowInput(input);
 
-  feedback.textContent = 'Saving referral entry...';
+  if (!validation.isValid) {
+    showFormErrors(form, validation.errors);
+    showProfileToast(root, 'Fix the highlighted fields.');
+    return;
+  }
+
+  clearFormErrors(form);
 
   try {
-    await createUserRow(userId, input);
+    const createdRowRef = await createUserRow(viewModel.userId, input);
+    const rowInput = buildPrivateRowInput(input);
+    const createdRow = {
+      id: createdRowRef.id,
+      ...rowInput,
+      isPublished: false,
+      publicRowId: '',
+      views: 0,
+      clicks: 0
+    };
+
     form.reset();
-    feedback.textContent = 'Referral entry created.';
-    await loadPrivateRows(root, {
-      emptyStateTitle: 'No personal rows yet',
-      emptyStateDescription: 'Create your first private row to start building your personal dataset.',
-      userId
-    });
+    clearFormErrors(form);
+
+    if (!appendPrivateRow(root, createdRow)) {
+      await loadPrivateRows(root, viewModel);
+    }
+
+    showProfileToast(root, 'Referral entry created.');
   } catch (error) {
     console.error('Failed to create referral entry:', error);
-    feedback.textContent = `Failed to create referral entry. ${getPrivateRowsErrorMessage(error)}`;
+    showProfileToast(root, `Failed to create referral entry. ${getPrivateRowsErrorMessage(error)}`);
   }
 }
 
@@ -444,6 +475,11 @@ async function loadPrivateRows(root, viewModel) {
     return;
   }
 
+  const emptyState = {
+    title: viewModel.emptyStateTitle,
+    description: viewModel.emptyStateDescription
+  };
+
   container.innerHTML = `
       <div class="placeholder">
         <h3>Loading referral entries...</h3>
@@ -453,11 +489,8 @@ async function loadPrivateRows(root, viewModel) {
 
   try {
     const rows = await listUserRows(viewModel.userId);
-    container.innerHTML = renderPrivateRows(rows, {
-      title: viewModel.emptyStateTitle,
-      description: viewModel.emptyStateDescription
-    });
-    wirePrivateRowEditForms(root, viewModel.userId);
+    container.innerHTML = renderPrivateRows(rows, emptyState);
+    wirePrivateRowActions(container, root, viewModel.userId, rows, emptyState);
   } catch (error) {
     console.error('Failed to load private rows:', error);
     container.innerHTML = `
@@ -469,73 +502,132 @@ async function loadPrivateRows(root, viewModel) {
   }
 }
 
-function wirePrivateRowEditForms(root, userId) {
-  const forms = root.querySelectorAll('.private-row-edit-form');
+function wirePrivateRowActions(container, root, userId, rows, emptyState) {
+  container.__privateRowsContext = {
+    root,
+    userId,
+    rowsById: new Map(rows.map((row) => [row.id, row])),
+    emptyState
+  };
 
-  for (const form of forms) {
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const rowId = form.getAttribute('data-row-id');
-      if (!rowId) {
-        return;
-      }
-
-      void handleUpdateUserRow(root, userId, rowId, form);
-    });
-
-    form.querySelector('[data-role="toggle-publish"]')?.addEventListener('click', () => {
-      const rowId = form.getAttribute('data-row-id');
-      if (!rowId) {
-        return;
-      }
-
-      const isPublished = form.getAttribute('data-published') === 'true';
-      void handleTogglePublish(root, userId, rowId, isPublished, form);
-    });
-
-    form.querySelector('[data-role="delete-row"]')?.addEventListener('click', () => {
-      const rowId = form.getAttribute('data-row-id');
-      if (!rowId) {
-        return;
-      }
-
-      void handleDeleteUserRow(root, userId, rowId, form);
-    });
-  }
-}
-
-async function handleTogglePublish(root, userId, rowId, isPublished, form) {
-  const feedback = form.querySelector('[data-role="edit-feedback"]');
-  if (!feedback) {
+  if (container.__privateRowsActionsWired) {
     return;
   }
 
-  feedback.textContent = isPublished ? 'Unpublishing referral entry...' : 'Publishing referral entry...';
+  container.__privateRowsActionsWired = true;
+  container.addEventListener('click', handlePrivateRowsClick);
+  container.addEventListener('submit', handlePrivateRowsSubmit);
+  container.addEventListener('input', handlePrivateRowsInput);
+  container.addEventListener('change', handlePrivateRowsInput);
+}
+
+function getPrivateRowsContext(container) {
+  return container.__privateRowsContext ?? null;
+}
+
+function handlePrivateRowsClick(event) {
+  const container = event.currentTarget;
+  const context = getPrivateRowsContext(container);
+  const action = event.target.closest('[data-role]');
+
+  if (!context || !action || !container.contains(action)) {
+    return;
+  }
+
+  const card = action.closest('.private-row-card');
+  const row = card ? context.rowsById.get(card.dataset.rowId) : null;
+
+  if (!card || !row) {
+    return;
+  }
+
+  switch (action.dataset.role) {
+    case 'edit-row':
+      setRowEditMode(card, true);
+      break;
+    case 'cancel-edit': {
+      const form = card.querySelector('.private-row-edit-form');
+      if (form) {
+        form.reset();
+        clearFormErrors(form);
+      }
+      setRowEditMode(card, false);
+      break;
+    }
+    case 'delete-row':
+      void handleDeleteUserRow(container, context, card, row);
+      break;
+    case 'toggle-publish':
+      void handleTogglePublish(context, card, row);
+      break;
+    default:
+      break;
+  }
+}
+
+function handlePrivateRowsSubmit(event) {
+  const container = event.currentTarget;
+  const context = getPrivateRowsContext(container);
+  const form = event.target.closest('.private-row-edit-form');
+
+  if (!context || !form) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const card = form.closest('.private-row-card');
+  const row = card ? context.rowsById.get(card.dataset.rowId) : null;
+
+  if (!card || !row) {
+    return;
+  }
+
+  void handleUpdateUserRow(context, card, row, form);
+}
+
+function handlePrivateRowsInput(event) {
+  const field = event.target;
+  const form = field.closest('form');
+
+  if (!form || !field.name) {
+    return;
+  }
+
+  clearFieldError(form, field.name);
+}
+
+async function handleTogglePublish(context, card, row) {
+  const { root, userId } = context;
 
   try {
-    if (isPublished) {
-      await unpublishUserRow(userId, rowId);
+    if (row.isPublished) {
+      await unpublishUserRow(userId, row.id);
+      row.isPublished = false;
+      row.publicRowId = '';
+      row.clicks = 0;
+      showProfileToast(root, 'Referral entry unpublished.');
     } else {
-      await publishUserRow(userId, rowId);
+      const publicRowId = await publishUserRow(userId, row.id);
+      row.isPublished = true;
+      row.publicRowId = publicRowId;
+      row.clicks = 0;
+      showProfileToast(root, 'Referral entry published.');
     }
 
-    await loadPrivateRows(root, {
-      emptyStateTitle: 'No personal rows yet',
-      emptyStateDescription: 'Create your first private row to start building your personal dataset.',
-      userId
-    });
+    context.rowsById.set(row.id, row);
+    replacePrivateRowCard(card, row);
   } catch (error) {
     console.error('Failed to change publish state:', error);
-    feedback.textContent = `Failed to ${isPublished ? 'unpublish' : 'publish'} referral entry. ${getPublicRowsErrorMessage(error)}`;
+    showProfileToast(
+      root,
+      `Failed to ${row.isPublished ? 'unpublish' : 'publish'} referral entry. ${getPublicRowsErrorMessage(error)}`
+    );
   }
 }
 
-async function handleUpdateUserRow(root, userId, rowId, form) {
-  const feedback = form.querySelector('[data-role="edit-feedback"]');
-  if (!feedback) {
-    return;
-  }
-
+async function handleUpdateUserRow(context, card, row, form) {
+  const { root, userId } = context;
   const formData = new FormData(form);
   const input = {
     companyName: formData.get('companyName'),
@@ -543,39 +635,127 @@ async function handleUpdateUserRow(root, userId, rowId, form) {
     referralLink: formData.get('referralLink'),
     bonusDescription: formData.get('bonusDescription')
   };
+  const validation = validatePrivateRowInput(input);
 
-  feedback.textContent = 'Saving changes...';
-
-  try {
-    await updateUserRow(userId, rowId, input);
-    feedback.textContent = 'Referral entry updated.';
-    await loadPrivateRows(root, {
-      emptyStateTitle: 'No personal rows yet',
-      emptyStateDescription: 'Create your first private row to start building your personal dataset.',
-      userId
-    });
-  } catch (error) {
-    feedback.textContent = `Failed to update referral entry. ${getPublicRowsErrorMessage(error)}`;
-  }
-}
-
-async function handleDeleteUserRow(root, userId, rowId, form) {
-  const feedback = form.querySelector('[data-role="edit-feedback"]');
-  if (!feedback) {
+  if (!validation.isValid) {
+    showFormErrors(form, validation.errors);
+    showProfileToast(root, 'Fix the highlighted fields.');
     return;
   }
 
-  feedback.textContent = 'Deleting personal row...';
+  clearFormErrors(form);
 
   try {
-    await deleteUserRow(userId, rowId);
-    await loadPrivateRows(root, {
-      emptyStateTitle: 'No personal rows yet',
-      emptyStateDescription: 'Create your first private row to start building your personal dataset.',
-      userId
-    });
+    await updateUserRow(userId, row.id, input);
+    const updatedRow = { ...row, ...buildPrivateRowInput(input) };
+    context.rowsById.set(updatedRow.id, updatedRow);
+    replacePrivateRowCard(card, updatedRow);
+    showProfileToast(root, 'Referral entry updated.');
   } catch (error) {
-    feedback.textContent = `Failed to delete referral entry. ${getPrivateRowsErrorMessage(error)}`;
+    showProfileToast(root, `Failed to update referral entry. ${getPublicRowsErrorMessage(error)}`);
+  }
+}
+
+async function handleDeleteUserRow(container, context, card, row) {
+  const { root, userId } = context;
+  const confirmed = window.confirm(
+    `Delete the referral entry for "${row.companyName || 'this company'}"? This cannot be undone.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await deleteUserRow(userId, row.id);
+    context.rowsById.delete(row.id);
+    card.remove();
+
+    if (!container.querySelector('.private-row-card')) {
+      container.innerHTML = renderPrivateRowsEmptyState(context.emptyState);
+    }
+
+    showProfileToast(root, 'Referral entry deleted.');
+  } catch (error) {
+    showProfileToast(root, `Failed to delete referral entry. ${getPrivateRowsErrorMessage(error)}`);
+  }
+}
+
+function replacePrivateRowCard(card, row) {
+  card.outerHTML = renderPrivateRowCard(row);
+}
+
+function appendPrivateRow(root, row) {
+  const container = root.querySelector('#private-rows-container');
+  const context = container ? getPrivateRowsContext(container) : null;
+
+  if (!container || !context) {
+    return false;
+  }
+
+  context.rowsById.set(row.id, row);
+
+  const list = container.querySelector('.private-row-list');
+  if (list) {
+    list.insertAdjacentHTML('beforeend', renderPrivateRowCard(row));
+    return true;
+  }
+
+  container.innerHTML = renderPrivateRows([row], context.emptyState);
+  return true;
+}
+
+function showProfileToast(root, message) {
+  const toast = root.querySelector('#profile-toast');
+  if (!toast) {
+    return;
+  }
+
+  toast.textContent = message;
+  toast.hidden = false;
+  clearTimeout(profileToastTimer);
+  profileToastTimer = window.setTimeout(() => {
+    toast.hidden = true;
+  }, 4000);
+}
+
+function showFormErrors(form, errors) {
+  for (const [fieldName, message] of Object.entries(errors)) {
+    const error = form.querySelector(`[data-role="${fieldName}-error"]`);
+    const field = form.elements.namedItem(fieldName);
+
+    if (error) {
+      error.textContent = message;
+    }
+
+    if (field && typeof field.setAttribute === 'function') {
+      field.setAttribute('aria-invalid', message ? 'true' : 'false');
+    }
+  }
+}
+
+function clearFormErrors(form) {
+  for (const error of form.querySelectorAll('[data-role$="-error"]')) {
+    error.textContent = '';
+  }
+
+  for (const field of form.elements) {
+    if (field.name) {
+      field.setAttribute('aria-invalid', 'false');
+    }
+  }
+}
+
+function clearFieldError(form, fieldName) {
+  const error = form.querySelector(`[data-role="${fieldName}-error"]`);
+  const field = form.elements.namedItem(fieldName);
+
+  if (error) {
+    error.textContent = '';
+  }
+
+  if (field && typeof field.setAttribute === 'function') {
+    field.setAttribute('aria-invalid', 'false');
   }
 }
 
