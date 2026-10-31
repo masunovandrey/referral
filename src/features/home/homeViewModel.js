@@ -3,7 +3,10 @@ export function buildHomeViewModel(user) {
 
   return {
     isAuthenticated,
-    primaryActionLabel: isAuthenticated ? 'View your profile' : 'Sign in or register',
+    showAuthSection: !isAuthenticated,
+    identityLabel: isAuthenticated
+      ? user.email || user.displayName || 'authenticated user'
+      : '',
     showLogout: isAuthenticated,
     showProfileButton: isAuthenticated,
     publicDataButtons: [

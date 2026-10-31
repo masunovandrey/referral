@@ -9,6 +9,7 @@ import {
 } from './firebase/auth.js';
 import { buildEmailAuthViewModel } from './features/auth/emailAuthViewModel.js';
 import { buildHomeViewModel } from './features/home/homeViewModel.js';
+import { renderHomeView } from './features/home/homeView.js';
 import {
   createUserRow,
   deleteUserRow,
@@ -48,6 +49,11 @@ export function initApp(root) {
 
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
+
+    if (!user) {
+      emailAuthMode = 'login';
+    }
+
     render();
   });
 
@@ -58,62 +64,8 @@ export function initApp(root) {
 function renderHomePage(root, user, emailAuthMode, setEmailAuthMode) {
   const viewModel = buildHomeViewModel(user);
   const emailAuthViewModel = buildEmailAuthViewModel(emailAuthMode);
-  const publicDataButtons = viewModel.publicDataButtons
-    .map(
-      (button) =>
-        `<button id="${button.id}" class="action-button secondary-button" type="button">${button.label}</button>`
-    )
-    .join('');
 
-  root.innerHTML = `
-    <main class="layout">
-      <section class="panel auth-panel">
-        <div class="panel-header">
-          <div>
-            <p class="eyebrow">Referral</p>
-            <h1>Public Home</h1>
-          </div>
-          ${viewModel.showLogout ? '<button id="logout-button" class="action-button" type="button">Log out</button>' : ''}
-        </div>
-        <p class="lede">Anyone can view this page. Sign in to access your personal profile.</p>
-        <div class="action-row">
-          ${publicDataButtons}
-          ${viewModel.showProfileButton ? '<button id="open-profile-button" class="action-button" type="button">View your profile</button>' : ''}
-        </div>
-        <div id="public-data-container" class="placeholder">
-          <h2>Public data placeholder</h2>
-          <p>Public Firestore rows will be shown here in the next step.</p>
-        </div>
-        <section class="auth-section">
-          <div class="auth-section-header">
-            <h2>${emailAuthViewModel.title}</h2>
-            <button id="toggle-email-auth-mode" class="text-button" type="button">${emailAuthViewModel.toggleLabel}</button>
-          </div>
-          <form id="email-auth-form" class="profile-form">
-            ${emailAuthViewModel.showNameField ? `
-              <label class="field">
-                <span>Name</span>
-                <input name="name" type="text" autocomplete="name" />
-              </label>
-            ` : ''}
-            <label class="field">
-              <span>Email</span>
-              <input name="email" type="email" autocomplete="email" />
-            </label>
-            <label class="field">
-              <span>Password</span>
-              <input name="password" type="password" autocomplete="${emailAuthViewModel.mode === 'signup' ? 'new-password' : 'current-password'}" />
-            </label>
-            <button class="action-button" type="submit">${emailAuthViewModel.submitLabel}</button>
-          </form>
-          ${emailAuthViewModel.mode === 'login' ? '<button id="reset-password-button" class="text-button" type="button">Reset password</button>' : ''}
-          <p id="email-auth-feedback" class="form-feedback" aria-live="polite"></p>
-          <div class="auth-divider"><span>or</span></div>
-          <button id="google-sign-in-button" class="action-button secondary-button" type="button">Continue with Google</button>
-        </section>
-      </section>
-    </main>
-  `;
+  root.innerHTML = renderHomeView(viewModel, emailAuthViewModel);
 
   if (viewModel.isAuthenticated) {
     root.querySelector('#logout-button')?.addEventListener('click', async () => {
