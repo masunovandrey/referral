@@ -87,6 +87,15 @@ Do not store private user data in a shared collection unless there is a clear re
 Authorization must be enforced by Firestore Security Rules, not by frontend checks alone.
 Frontend route guards and UI checks are allowed, but they are not sufficient for security.
 
+GitHub Pages deploys only the frontend. Firestore rules are not deployed automatically.
+After changing `firestore.rules`, deploy them explicitly:
+
+```bash
+npm run deploy:rules
+```
+
+The Firebase CLI must be authenticated and a project must be selected.
+
 Required security behavior:
 
 Anyone can read public rows intended for public display

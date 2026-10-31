@@ -322,6 +322,8 @@ Deliverables:
 
 - Pages workflow or CI config
 - correct Vite base path if needed
+- explicit Firestore rules deployment (`npm run deploy:rules`) because Pages
+  deploys only the frontend
 - production Firebase config values
 
 ## Immediate next steps

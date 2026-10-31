@@ -584,7 +584,7 @@ function getPublicRowsErrorMessage(error) {
   const code = error && typeof error === 'object' && 'code' in error ? error.code : '';
 
   if (code === 'permission-denied') {
-    return 'Confirm your email to manage published referral entries.';
+    return 'Firestore denied the operation. Deploy the latest Firestore rules and check the referral entry fields.';
   }
 
   if (error instanceof Error && error.message) {
