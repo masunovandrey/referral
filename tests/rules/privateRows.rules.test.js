@@ -155,4 +155,53 @@ describe('private user rows security rules', () => {
 
     await assertFails(deleteDoc(doc(db, 'users/user-a/rows/seed-private-row')));
   });
+
+  it('blocks creating private rows with an unknown category', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
+
+    await assertFails(setDoc(doc(db, 'users/user-a/rows/bad-category-row'), {
+      ...privateRow,
+      companyName: 'Bad Category Co',
+      companyKey: 'bad%20category%20co',
+      category: 'not-a-category'
+    }));
+  });
+
+  it('blocks creating private rows without a referral link', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
+
+    await assertFails(setDoc(doc(db, 'users/user-a/rows/no-referral-row'), {
+      ...privateRow,
+      companyName: 'No Referral Co',
+      companyKey: 'no%20referral%20co',
+      referralLink: ''
+    }));
+  });
+
+  it('blocks creating private rows with an overlong company name', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
+
+    await assertFails(setDoc(doc(db, 'users/user-a/rows/long-company-row'), {
+      ...privateRow,
+      companyName: 'a'.repeat(121),
+      companyKey: 'a'.repeat(121)
+    }));
+  });
+
+  it('blocks updating private rows with an invalid category', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
+
+    await assertFails(updateDoc(doc(db, 'users/user-a/rows/seed-private-row'), {
+      category: 'not-a-category',
+      updatedAt: new Date('2026-01-02T00:00:00.000Z')
+    }));
+  });
+
+  it('blocks updating private rows by changing createdAt', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
+
+    await assertFails(updateDoc(doc(db, 'users/user-a/rows/seed-private-row'), {
+      createdAt: new Date('2026-01-02T00:00:00.000Z')
+    }));
+  });
 });

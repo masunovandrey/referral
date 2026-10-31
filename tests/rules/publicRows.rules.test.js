@@ -258,4 +258,28 @@ describe('publicRows security rules', () => {
 
     await assertSucceeds(deleteDoc(doc(db, 'publicRows/user-a_acme')));
   });
+
+  it('blocks creating public rows with an unknown category', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
+
+    await assertFails(setDoc(doc(db, 'publicRows/user-a_unknown'), {
+      ...newPublicRow,
+      companyName: 'Unknown Category Co',
+      companyKey: 'unknown',
+      category: 'not-a-category',
+      sourceRowId: 'seed-private-row'
+    }));
+  });
+
+  it('blocks updating public rows with an unknown field', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
+
+    await assertFails(
+      updateDoc(doc(db, 'publicRows/user-a_acme'), {
+        companyName: 'Acme Updated',
+        someUnknownField: 'oops',
+        updatedAt: new Date('2026-01-02T00:00:00.000Z')
+      })
+    );
+  });
 });

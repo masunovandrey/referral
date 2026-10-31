@@ -14,10 +14,32 @@ service cloud.firestore {
       return value is string && value.size() <= maxLength;
     }
 
+    function isValidCategory(category) {
+      return category == 'e-commerce & marketplaces'
+        || category == 'fashion & accessories'
+        || category == 'beauty'
+        || category == 'health'
+        || category == 'wellness & fitness'
+        || category == 'food'
+        || category == 'travel'
+        || category == 'mobility & transportation'
+        || category == 'fintech'
+        || category == 'insurance'
+        || category == 'telecom & connectivity'
+        || category == 'utilities & home'
+        || category == 'real estate'
+        || category == 'software'
+        || category == 'education'
+        || category == 'entertainment'
+        || category == 'games'
+        || category == 'pet'
+        || category == 'baby & family';
+    }
+
     function isValidPublicRow(data) {
       return isNonEmptyString(data.companyName, 120)
         && isNonEmptyString(data.companyKey, 1450)
-        && isNonEmptyString(data.category, 80)
+        && isValidCategory(data.category)
         && isNonEmptyString(data.referralLink, 2048)
         && data.referralLink.matches('^https?://.+')
         && isOptionalString(data.bonusDescription, 1000)
@@ -25,6 +47,19 @@ service cloud.firestore {
         && isNonEmptyString(data.sourceRowId, 128)
         && data.clicks is int
         && data.clicks >= 0
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPrivateRow(data) {
+      return isNonEmptyString(data.companyName, 120)
+        && isNonEmptyString(data.companyKey, 1450)
+        && isValidCategory(data.category)
+        && isNonEmptyString(data.referralLink, 2048)
+        && data.referralLink.matches('^https?://.+')
+        && isOptionalString(data.bonusDescription, 1000)
+        && data.isPublished is bool
+        && isOptionalString(data.publicRowId, 128)
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
     }
@@ -47,6 +82,14 @@ service cloud.firestore {
         && request.resource.data.clicks == resource.data.clicks
         && request.resource.data.createdAt == resource.data.createdAt
         && rowId == request.auth.uid + '_' + request.resource.data.companyKey
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly([
+            'companyName',
+            'category',
+            'referralLink',
+            'bonusDescription',
+            'updatedAt'
+          ])
         && isValidPublicRow(request.resource.data);
 
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
@@ -58,7 +101,32 @@ service cloud.firestore {
     }
 
     match /users/{uid}/rows/{rowId} {
-      allow read, create, update, delete: if request.auth != null
+      allow read: if request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.email_verified == true;
+
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.email_verified == true
+        && isValidPrivateRow(request.resource.data);
+
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.email_verified == true
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly([
+            'companyName',
+            'companyKey',
+            'category',
+            'referralLink',
+            'bonusDescription',
+            'isPublished',
+            'publicRowId',
+            'updatedAt'
+          ])
+        && isValidPrivateRow(request.resource.data);
+
+      allow delete: if request.auth != null
         && request.auth.uid == uid
         && request.auth.token.email_verified == true;
     }
