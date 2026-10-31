@@ -10,7 +10,8 @@ describe('renderHomeView', () => {
     expect(html).toContain('id="email-auth-form"');
     expect(html).toContain('id="google-sign-in-button"');
     expect(html).toContain('id="reset-password-button"');
-    expect(html).toContain('id="load-recent-public"');
+    expect(html).toContain('id="public-catalog-container"');
+    expect(html).not.toContain('id="load-recent-public"');
     expect(html).not.toContain('id="logout-button"');
     expect(html).not.toContain('id="open-profile-button"');
     expect(html).not.toContain('id="resend-verification-button"');
@@ -28,6 +29,7 @@ describe('renderHomeView', () => {
     expect(html).toContain('Signed in as user@example.com');
     expect(html).toContain('id="logout-button"');
     expect(html).toContain('id="open-profile-button"');
+    expect(html).toContain('id="public-catalog-container"');
     expect(html).not.toContain('id="resend-verification-button"');
   });
 

@@ -20,6 +20,8 @@ describe('renderPrivateRows', () => {
         category: 'travel',
         referralLink: 'https://example.com',
         bonusDescription: 'My bonus details',
+        isPublished: true,
+        publicRowId: 'user-a_test%20company',
         views: 5
       }
     ];
@@ -28,7 +30,6 @@ describe('renderPrivateRows', () => {
       description: 'Create some rows'
     };
 
-    // This would throw if categoryOptions is incorrectly evaluated as a string instead of a function reference
     const html = renderPrivateRows(rows, emptyState);
 
     expect(html).toContain('Test Company');
@@ -37,5 +38,29 @@ describe('renderPrivateRows', () => {
     expect(html).toContain('https://example.com');
     expect(html).toContain('My bonus details');
     expect(html).toContain('Views: 5');
+    expect(html).toContain('Published');
+    expect(html).toContain('data-role="toggle-publish"');
+    expect(html).toContain('Unpublish');
+  });
+
+  it('renders the publish action for unpublished rows', () => {
+    const html = renderPrivateRows(
+      [
+        {
+          id: 'row-1',
+          companyName: 'Test Company',
+          category: 'travel',
+          referralLink: 'https://example.com',
+          bonusDescription: 'My bonus details',
+          isPublished: false,
+          publicRowId: '',
+          views: 0
+        }
+      ],
+      { title: 'No rows', description: 'Create some rows' }
+    );
+
+    expect(html).toContain('Not published');
+    expect(html).toContain('>Publish</button>');
   });
 });

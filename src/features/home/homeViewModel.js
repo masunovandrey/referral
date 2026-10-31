@@ -11,10 +11,6 @@ export function buildHomeViewModel(user) {
       ? user.email || user.displayName || 'authenticated user'
       : '',
     showLogout: isAuthenticated,
-    showProfileButton: isEmailVerified,
-    publicDataButtons: [
-      { id: 'load-recent-public', label: 'Load recent public data' },
-      { id: 'load-featured-public', label: 'Load featured public data' }
-    ]
+    showProfileButton: isEmailVerified
   };
 }

@@ -249,6 +249,27 @@ h1 {
   color: #52606d;
 }
 
+.catalog-hint {
+  margin-top: 0;
+  color: #52606d;
+}
+
+.company-copy-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #9a3412;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.company-copy-button:hover,
+.company-copy-button:focus-visible {
+  text-decoration: underline;
+}
+
 @media (max-width: 640px) {
   .panel {
     padding: 24px;

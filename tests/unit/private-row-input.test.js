@@ -15,6 +15,7 @@ describe('buildPrivateRowInput', () => {
       })
     ).toEqual({
       companyName: 'Example Company',
+      companyKey: 'example%20company',
       category: 'fintech',
       referralLink: 'https://example.com/referral',
       bonusDescription: 'Personal bonus note'
@@ -24,6 +25,7 @@ describe('buildPrivateRowInput', () => {
   it('falls back to empty strings for missing fields', () => {
     expect(buildPrivateRowInput({})).toEqual({
       companyName: '',
+      companyKey: '',
       category: '',
       referralLink: '',
       bonusDescription: ''
@@ -40,6 +42,7 @@ describe('buildPrivateRowInput', () => {
       })
     ).toEqual({
       companyName: 'Updated Company',
+      companyKey: 'updated%20company',
       category: 'travel',
       referralLink: 'https://example.com/updated',
       bonusDescription: 'Updated bonus'
@@ -66,10 +69,41 @@ describe('normalizePrivateRows', () => {
       {
         id: 'row-a',
         companyName: 'Example Company',
+        companyKey: 'example%20company',
         category: 'fintech',
         referralLink: 'https://example.com/referral',
         bonusDescription: 'Owned by the current user',
+        isPublished: false,
+        publicRowId: '',
         views: 12
+      }
+    ]);
+  });
+
+  it('keeps publish state for published rows', () => {
+    expect(
+      normalizePrivateRows([
+        {
+          id: 'row-a',
+          data: () => ({
+            companyName: 'Example Company',
+            companyKey: 'example%20company',
+            isPublished: true,
+            publicRowId: 'user-a_example%20company'
+          })
+        }
+      ])
+    ).toEqual([
+      {
+        id: 'row-a',
+        companyName: 'Example Company',
+        companyKey: 'example%20company',
+        category: '',
+        referralLink: '',
+        bonusDescription: '',
+        isPublished: true,
+        publicRowId: 'user-a_example%20company',
+        views: 0
       }
     ]);
   });
@@ -86,9 +120,12 @@ describe('normalizePrivateRows', () => {
       {
         id: 'row-a',
         companyName: '',
+        companyKey: '',
         category: '',
         referralLink: '',
         bonusDescription: '',
+        isPublished: false,
+        publicRowId: '',
         views: 0
       }
     ]);

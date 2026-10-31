@@ -1,30 +1,44 @@
-export function renderPublicRows(rows) {
-  if (rows.length === 0) {
+export function renderPublicRows(groups) {
+  if (groups.length === 0) {
     return `
       <div class="placeholder">
-        <h2>Public data</h2>
-        <p>No public rows are available yet.</p>
+        <h2>Referral catalog</h2>
+        <p>No referral links are published yet.</p>
       </div>
     `;
   }
 
   return `
     <section class="public-rows">
-      <h2>Public data</h2>
+      <h2>Referral catalog</h2>
+      <p class="catalog-hint">Click a company to copy a random referral link.</p>
       <div class="public-row-list">
-        ${rows
+        ${groups
           .map(
-            (row) => `
+            (group) => `
               <article class="public-row-card">
-                <h3>${escapeHtml(row.title)}</h3>
-                <p>${escapeHtml(row.description)}</p>
+                <h3>
+                  <button class="company-copy-button" type="button" data-company-key="${escapeHtmlAttribute(group.companyKey)}">
+                    ${escapeHtml(group.companyName)}
+                  </button>
+                </h3>
+                <p>${escapeHtml(formatCategories(group.categories))} &middot; ${formatLinkCount(group.linkCount)}</p>
               </article>
             `
           )
           .join('')}
       </div>
+      <p id="public-catalog-feedback" class="form-feedback" aria-live="polite"></p>
     </section>
   `;
+}
+
+function formatCategories(categories) {
+  return categories.length > 0 ? categories.join(', ') : 'Uncategorized';
+}
+
+function formatLinkCount(linkCount) {
+  return `${linkCount} referral ${linkCount === 1 ? 'link' : 'links'}`;
 }
 
 function escapeHtml(value) {
@@ -34,4 +48,8 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+}
+
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value);
 }

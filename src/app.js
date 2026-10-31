@@ -16,12 +16,18 @@ import {
   createUserRow,
   deleteUserRow,
   listUserRows,
+  publishUserRow,
+  unpublishUserRow,
   updateUserRow
 } from './features/privateRows/privateRows.api.js';
 import { buildProfileViewModel } from './features/privateRows/profileViewModel.js';
 import { referralCategories } from './features/privateRows/privateRows.model.js';
 import { renderPrivateRows } from './features/privateRows/privateRows.ui.js';
 import { listPublicRows } from './features/publicRows/publicRows.api.js';
+import {
+  groupPublicRowsByCompany,
+  pickRandomPublicRow
+} from './features/publicRows/publicRows.model.js';
 import { renderPublicRows } from './features/publicRows/publicRows.ui.js';
 import { getHashPath, navigateTo, resolveRoute, routes } from './router.js';
 
@@ -110,46 +116,43 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
     if (viewModel.showVerificationBanner) {
       wireVerificationActions(root, refreshUser);
     }
+  } else {
+    root.querySelector('#toggle-email-auth-mode')?.addEventListener('click', () => {
+      setEmailAuthMode(emailAuthViewModel.mode === 'login' ? 'signup' : 'login');
+    });
 
-    wirePublicDataButtons(root);
-    return;
+    root.querySelector('#email-auth-form')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      void handleEmailAuth(root, emailAuthViewModel.mode, event.currentTarget);
+    });
+
+    root.querySelector('#reset-password-button')?.addEventListener('click', () => {
+      const form = root.querySelector('#email-auth-form');
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      void handlePasswordReset(root, form);
+    });
+
+    root.querySelector('#google-sign-in-button')?.addEventListener('click', async () => {
+      const feedback = root.querySelector('#email-auth-feedback');
+      if (feedback) {
+        feedback.textContent = 'Signing in with Google...';
+      }
+
+      try {
+        await signInWithGoogle();
+        navigateTo(routes.profile);
+      } catch (error) {
+        if (feedback) {
+          feedback.textContent = getAuthErrorMessage(error);
+        }
+      }
+    });
   }
 
-  root.querySelector('#toggle-email-auth-mode')?.addEventListener('click', () => {
-    setEmailAuthMode(emailAuthViewModel.mode === 'login' ? 'signup' : 'login');
-  });
-
-  root.querySelector('#email-auth-form')?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    void handleEmailAuth(root, emailAuthViewModel.mode, event.currentTarget);
-  });
-
-  root.querySelector('#reset-password-button')?.addEventListener('click', () => {
-    const form = root.querySelector('#email-auth-form');
-    if (!(form instanceof HTMLFormElement)) {
-      return;
-    }
-
-    void handlePasswordReset(root, form);
-  });
-
-  root.querySelector('#google-sign-in-button')?.addEventListener('click', async () => {
-    const feedback = root.querySelector('#email-auth-feedback');
-    if (feedback) {
-      feedback.textContent = 'Signing in with Google...';
-    }
-
-    try {
-      await signInWithGoogle();
-      navigateTo(routes.profile);
-    } catch (error) {
-      if (feedback) {
-        feedback.textContent = getAuthErrorMessage(error);
-      }
-    }
-  });
-
-  wirePublicDataButtons(root);
+  void loadPublicCatalog(root);
 }
 
 function wireVerificationActions(root, refreshUser) {
@@ -273,40 +276,67 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-function wirePublicDataButtons(root) {
-  root.querySelector('#load-recent-public')?.addEventListener('click', () => {
-    void loadPublicRows(root);
-  });
-
-  root.querySelector('#load-featured-public')?.addEventListener('click', () => {
-    void loadPublicRows(root);
-  });
-}
-
-async function loadPublicRows(root) {
-  const container = root.querySelector('#public-data-container');
+async function loadPublicCatalog(root) {
+  const container = root.querySelector('#public-catalog-container');
   if (!container) {
     return;
   }
 
   container.innerHTML = `
     <div class="placeholder">
-      <h2>Public data</h2>
-      <p>Loading public rows...</p>
+      <h2>Referral catalog</h2>
+      <p>Loading published referral links...</p>
     </div>
   `;
 
   try {
     const rows = await listPublicRows();
-    container.outerHTML = `<div id="public-data-container">${renderPublicRows(rows)}</div>`;
+    const groups = groupPublicRowsByCompany(rows);
+
+    container.classList.remove('placeholder');
+    container.innerHTML = renderPublicRows(groups);
+    wireCompanyCopyButtons(container, groups);
   } catch (error) {
     console.error('Failed to load public rows:', error);
+    container.classList.add('placeholder');
     container.innerHTML = `
       <div class="placeholder">
-        <h2>Public data</h2>
-        <p>Failed to load public rows. Check Firebase configuration and Firestore data.</p>
+        <h2>Referral catalog</h2>
+        <p>Failed to load referral links. Check Firebase configuration and Firestore data.</p>
       </div>
     `;
+  }
+}
+
+function wireCompanyCopyButtons(container, groups) {
+  const feedback = container.querySelector('#public-catalog-feedback');
+
+  for (const button of container.querySelectorAll('[data-company-key]')) {
+    button.addEventListener('click', async () => {
+      const companyKey = button.getAttribute('data-company-key');
+      const group = groups.find((candidate) => candidate.companyKey === companyKey);
+      const row = group ? pickRandomPublicRow(group.links) : null;
+
+      if (!group || !row) {
+        return;
+      }
+
+      try {
+        if (!navigator.clipboard?.writeText) {
+          throw new Error('Clipboard is unavailable.');
+        }
+
+        await navigator.clipboard.writeText(row.referralLink);
+
+        if (feedback) {
+          feedback.textContent = `Copied referral link for ${group.companyName}.`;
+        }
+      } catch (error) {
+        if (feedback) {
+          feedback.textContent = `Could not copy the referral link for ${group.companyName}.`;
+        }
+      }
+    });
   }
 }
 
@@ -444,6 +474,16 @@ function wirePrivateRowEditForms(root, userId) {
       void handleUpdateUserRow(root, userId, rowId, form);
     });
 
+    form.querySelector('[data-role="toggle-publish"]')?.addEventListener('click', () => {
+      const rowId = form.getAttribute('data-row-id');
+      if (!rowId) {
+        return;
+      }
+
+      const isPublished = form.getAttribute('data-published') === 'true';
+      void handleTogglePublish(root, userId, rowId, isPublished, form);
+    });
+
     form.querySelector('[data-role="delete-row"]')?.addEventListener('click', () => {
       const rowId = form.getAttribute('data-row-id');
       if (!rowId) {
@@ -452,6 +492,32 @@ function wirePrivateRowEditForms(root, userId) {
 
       void handleDeleteUserRow(root, userId, rowId, form);
     });
+  }
+}
+
+async function handleTogglePublish(root, userId, rowId, isPublished, form) {
+  const feedback = form.querySelector('[data-role="edit-feedback"]');
+  if (!feedback) {
+    return;
+  }
+
+  feedback.textContent = isPublished ? 'Unpublishing referral entry...' : 'Publishing referral entry...';
+
+  try {
+    if (isPublished) {
+      await unpublishUserRow(userId, rowId);
+    } else {
+      await publishUserRow(userId, rowId);
+    }
+
+    await loadPrivateRows(root, {
+      emptyStateTitle: 'No personal rows yet',
+      emptyStateDescription: 'Create your first private row to start building your personal dataset.',
+      userId
+    });
+  } catch (error) {
+    console.error('Failed to change publish state:', error);
+    feedback.textContent = `Failed to ${isPublished ? 'unpublish' : 'publish'} referral entry. ${getPublicRowsErrorMessage(error)}`;
   }
 }
 
@@ -480,7 +546,7 @@ async function handleUpdateUserRow(root, userId, rowId, form) {
       userId
     });
   } catch (error) {
-    feedback.textContent = `Failed to update referral entry. ${getPrivateRowsErrorMessage(error)}`;
+    feedback.textContent = `Failed to update referral entry. ${getPublicRowsErrorMessage(error)}`;
   }
 }
 
@@ -509,6 +575,20 @@ function getPrivateRowsErrorMessage(error) {
 
   if (code === 'permission-denied') {
     return 'Confirm your email to access your referral entries.';
+  }
+
+  return 'Check authentication and Firestore access, then try again.';
+}
+
+function getPublicRowsErrorMessage(error) {
+  const code = error && typeof error === 'object' && 'code' in error ? error.code : '';
+
+  if (code === 'permission-denied') {
+    return 'Confirm your email to manage published referral entries.';
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
   }
 
   return 'Check authentication and Firestore access, then try again.';

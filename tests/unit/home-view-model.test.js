@@ -10,11 +10,7 @@ describe('buildHomeViewModel', () => {
       showVerificationBanner: false,
       identityLabel: '',
       showLogout: false,
-      showProfileButton: false,
-      publicDataButtons: [
-        { id: 'load-recent-public', label: 'Load recent public data' },
-        { id: 'load-featured-public', label: 'Load featured public data' }
-      ]
+      showProfileButton: false
     });
   });
 
@@ -28,11 +24,7 @@ describe('buildHomeViewModel', () => {
       showVerificationBanner: false,
       identityLabel: 'user@example.com',
       showLogout: true,
-      showProfileButton: true,
-      publicDataButtons: [
-        { id: 'load-recent-public', label: 'Load recent public data' },
-        { id: 'load-featured-public', label: 'Load featured public data' }
-      ]
+      showProfileButton: true
     });
   });
 

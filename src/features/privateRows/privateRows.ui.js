@@ -19,7 +19,7 @@ export function renderPrivateRows(rows, emptyState) {
         .map(
           (row) => `
             <article class="private-row-card" data-row-id="${row.id}">
-              <form class="private-row-edit-form" data-row-id="${row.id}">
+              <form class="private-row-edit-form" data-row-id="${row.id}" data-published="${row.isPublished ? 'true' : 'false'}">
                 <label class="field">
                   <span>Company name</span>
                   <input name="companyName" type="text" value="${escapeHtmlAttribute(row.companyName)}" autocomplete="organization" />
@@ -39,12 +39,13 @@ export function renderPrivateRows(rows, emptyState) {
                   <span>Bonus description</span>
                   <textarea name="bonusDescription" rows="3">${escapeHtml(row.bonusDescription)}</textarea>
                 </label>
-                <p class="row-meta">Views: ${row.views}</p>
+                <p class="row-meta">${row.isPublished ? 'Published' : 'Not published'} &middot; Views: ${row.views}</p>
                 <div class="private-row-preview">
                   <a href="${escapeHtmlAttribute(row.referralLink)}" target="_blank" rel="noreferrer">Open referral link</a>
                 </div>
                 <div class="private-row-actions">
                   <button class="action-button" type="submit">${actions.saveLabel}</button>
+                  <button class="action-button secondary-button" type="button" data-role="toggle-publish">${row.isPublished ? actions.unpublishLabel : actions.publishLabel}</button>
                   <button class="action-button danger-button" type="button" data-role="delete-row">${actions.deleteLabel}</button>
                 </div>
                 <p class="form-feedback" data-role="edit-feedback" aria-live="polite"></p>

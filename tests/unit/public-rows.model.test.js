@@ -1,41 +1,78 @@
 import { describe, expect, it } from 'vitest';
-import { normalizePublicRows } from '../../src/features/publicRows/publicRows.model.js';
+import {
+  buildCompanyKey,
+  buildPublicRowId,
+  groupPublicRowsByCompany,
+  normalizePublicRows,
+  pickRandomPublicRow
+} from '../../src/features/publicRows/publicRows.model.js';
+
+describe('buildCompanyKey', () => {
+  it('normalizes and encodes the company name', () => {
+    expect(buildCompanyKey('  Acme   Corp  ')).toBe('acme%20corp');
+    expect(buildCompanyKey('AT&T')).toBe('at%26t');
+  });
+
+  it('returns an empty key for missing company names', () => {
+    expect(buildCompanyKey('')).toBe('');
+    expect(buildCompanyKey(null)).toBe('');
+  });
+});
+
+describe('buildPublicRowId', () => {
+  it('builds a deterministic public row id', () => {
+    expect(buildPublicRowId('user-a', 'acme%20corp')).toBe('user-a_acme%20corp');
+  });
+});
 
 describe('normalizePublicRows', () => {
-  it('returns only visible public rows with UI-safe fields', () => {
+  it('maps Firestore rows into public catalog rows', () => {
     const rows = normalizePublicRows([
       {
-        id: 'visible-row',
+        id: 'public-row',
         data: () => ({
-          title: 'Visible row',
-          description: 'Shown on the public page',
-          visible: true
-        })
-      },
-      {
-        id: 'hidden-row',
-        data: () => ({
-          title: 'Hidden row',
-          description: 'Should not be shown',
-          visible: false
+          companyName: 'Acme',
+          companyKey: 'acme',
+          category: 'fintech',
+          referralLink: 'https://acme.example/referral',
+          bonusDescription: 'Bonus details',
+          ownerUid: 'user-a',
+          sourceRowId: 'private-row',
+          clicks: 3
         })
       }
     ]);
 
     expect(rows).toEqual([
       {
-        id: 'visible-row',
-        title: 'Visible row',
-        description: 'Shown on the public page'
+        id: 'public-row',
+        companyName: 'Acme',
+        companyKey: 'acme',
+        category: 'fintech',
+        referralLink: 'https://acme.example/referral',
+        bonusDescription: 'Bonus details',
+        ownerUid: 'user-a',
+        sourceRowId: 'private-row',
+        clicks: 3
       }
     ]);
   });
 
-  it('falls back to empty strings for missing text fields', () => {
+  it('builds a company key fallback and ignores legacy or invalid rows', () => {
     const rows = normalizePublicRows([
       {
-        id: 'partial-row',
+        id: 'valid-row',
         data: () => ({
+          companyName: 'Acme Corp',
+          category: 'travel',
+          referralLink: 'https://acme.example/referral'
+        })
+      },
+      {
+        id: 'legacy-row',
+        data: () => ({
+          title: 'Old public row',
+          description: 'Old schema',
           visible: true
         })
       }
@@ -43,10 +80,86 @@ describe('normalizePublicRows', () => {
 
     expect(rows).toEqual([
       {
-        id: 'partial-row',
-        title: '',
-        description: ''
+        id: 'valid-row',
+        companyName: 'Acme Corp',
+        companyKey: 'acme%20corp',
+        category: 'travel',
+        referralLink: 'https://acme.example/referral',
+        bonusDescription: '',
+        ownerUid: '',
+        sourceRowId: '',
+        clicks: 0
       }
     ]);
   });
 });
+
+describe('groupPublicRowsByCompany', () => {
+  it('groups links by company and sorts companies and categories', () => {
+    const groups = groupPublicRowsByCompany([
+      publicRow({ id: 'travel-link', companyName: 'Acme', companyKey: 'acme', category: 'travel' }),
+      publicRow({ id: 'fintech-link', companyName: 'Acme', companyKey: 'acme', category: 'fintech' }),
+      publicRow({ id: 'beta-link', companyName: 'Beta', companyKey: 'beta', category: 'software' })
+    ]);
+
+    expect(groups).toEqual([
+      {
+        companyKey: 'acme',
+        companyName: 'Acme',
+        categories: ['fintech', 'travel'],
+        links: [
+          expect.objectContaining({ id: 'travel-link' }),
+          expect.objectContaining({ id: 'fintech-link' })
+        ],
+        linkCount: 2
+      },
+      {
+        companyKey: 'beta',
+        companyName: 'Beta',
+        categories: ['software'],
+        links: [expect.objectContaining({ id: 'beta-link' })],
+        linkCount: 1
+      }
+    ]);
+  });
+
+  it('ignores rows without a company or referral link', () => {
+    expect(
+      groupPublicRowsByCompany([
+        publicRow({ id: 'valid-link' }),
+        publicRow({ id: 'missing-company', companyName: '', companyKey: '' }),
+        publicRow({ id: 'missing-link', referralLink: '' })
+      ])
+    ).toHaveLength(1);
+  });
+});
+
+describe('pickRandomPublicRow', () => {
+  const rows = [publicRow({ id: 'first' }), publicRow({ id: 'second' }), publicRow({ id: 'third' })];
+
+  it('picks a row using the provided random source', () => {
+    expect(pickRandomPublicRow(rows, () => 0)).toEqual(expect.objectContaining({ id: 'first' }));
+    expect(pickRandomPublicRow(rows, () => 0.99)).toEqual(
+      expect.objectContaining({ id: 'third' })
+    );
+  });
+
+  it('returns null for an empty list', () => {
+    expect(pickRandomPublicRow([], () => 0)).toBeNull();
+  });
+});
+
+function publicRow(overrides = {}) {
+  return {
+    id: 'public-row',
+    companyName: 'Acme',
+    companyKey: 'acme',
+    category: 'fintech',
+    referralLink: 'https://acme.example/referral',
+    bonusDescription: 'Bonus details',
+    ownerUid: 'user-a',
+    sourceRowId: 'private-row',
+    clicks: 0,
+    ...overrides
+  };
+}

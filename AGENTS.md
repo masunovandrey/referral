@@ -51,18 +51,31 @@ Preferred Firestore structure:
 
 ```text
 /publicRows/{rowId}
-  title
-  description
-  visible
+  companyName
+  companyKey
+  category
+  referralLink
+  bonusDescription
+  ownerUid
+  sourceRowId
+  clicks
   createdAt
   updatedAt
 
 /users/{uid}/rows/{rowId}
-  title
-  description
+  companyName
+  companyKey
+  category
+  referralLink
+  bonusDescription
+  isPublished
+  publicRowId
   createdAt
   updatedAt
 ```
+
+`companyKey` is the encoded normalized company name. `publicRowId` is
+`uid + '_' + companyKey`, so only one public row per company per user is possible.
 
 Private user rows must be stored under the authenticated user's UID:
 

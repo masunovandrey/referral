@@ -1,11 +1,4 @@
 export function renderHomeView(viewModel, emailAuthViewModel) {
-  const publicDataButtons = viewModel.publicDataButtons
-    .map(
-      (button) =>
-        `<button id="${button.id}" class="action-button secondary-button" type="button">${escapeHtml(button.label)}</button>`
-    )
-    .join('');
-
   const lede = viewModel.isAuthenticated
     ? `Signed in as ${escapeHtml(viewModel.identityLabel)}.`
     : 'Anyone can view this page. Sign in to access your personal profile.';
@@ -22,13 +15,14 @@ export function renderHomeView(viewModel, emailAuthViewModel) {
         </div>
         <p class="lede">${lede}</p>
         ${viewModel.showVerificationBanner ? renderVerificationBanner(viewModel.identityLabel) : ''}
-        <div class="action-row">
-          ${publicDataButtons}
-          ${viewModel.showProfileButton ? '<button id="open-profile-button" class="action-button" type="button">View your profile</button>' : ''}
-        </div>
-        <div id="public-data-container" class="placeholder">
-          <h2>Public data placeholder</h2>
-          <p>Public Firestore rows will be shown here in the next step.</p>
+        ${viewModel.showProfileButton ? `
+          <div class="action-row">
+            <button id="open-profile-button" class="action-button" type="button">View your profile</button>
+          </div>
+        ` : ''}
+        <div id="public-catalog-container" class="placeholder">
+          <h2>Referral catalog</h2>
+          <p>Loading published referral links...</p>
         </div>
         ${viewModel.showAuthSection ? renderAuthSection(emailAuthViewModel) : ''}
       </section>

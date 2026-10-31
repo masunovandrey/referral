@@ -13,8 +13,13 @@ const projectId = 'demo-referral-private-rows';
 let testEnv;
 
 const privateRow = {
-  title: 'Private referral',
-  description: 'User-owned private row',
+  companyName: 'Private referral',
+  companyKey: 'private%20referral',
+  category: 'fintech',
+  referralLink: 'https://example.com/referral',
+  bonusDescription: 'User-owned private row',
+  isPublished: false,
+  publicRowId: '',
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
   updatedAt: new Date('2026-01-01T00:00:00.000Z')
 };
@@ -59,7 +64,7 @@ describe('private user rows security rules', () => {
     const db = testEnv.unauthenticatedContext().firestore();
 
     await assertFails(updateDoc(doc(db, 'users/user-a/rows/seed-private-row'), {
-      title: 'Changed private referral',
+      companyName: 'Changed private referral',
       updatedAt: new Date('2026-01-02T00:00:00.000Z')
     }));
   });
@@ -86,7 +91,7 @@ describe('private user rows security rules', () => {
     const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertSucceeds(updateDoc(doc(db, 'users/user-a/rows/seed-private-row'), {
-      title: 'Changed private referral',
+      companyName: 'Changed private referral',
       updatedAt: new Date('2026-01-02T00:00:00.000Z')
     }));
   });
@@ -113,7 +118,7 @@ describe('private user rows security rules', () => {
     const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertFails(updateDoc(doc(db, 'users/user-b/rows/seed-private-row'), {
-      title: 'Changed private referral',
+      companyName: 'Changed private referral',
       updatedAt: new Date('2026-01-02T00:00:00.000Z')
     }));
   });
@@ -140,7 +145,7 @@ describe('private user rows security rules', () => {
     const db = testEnv.authenticatedContext('user-a', { email_verified: false }).firestore();
 
     await assertFails(updateDoc(doc(db, 'users/user-a/rows/seed-private-row'), {
-      title: 'Changed private referral',
+      companyName: 'Changed private referral',
       updatedAt: new Date('2026-01-02T00:00:00.000Z')
     }));
   });

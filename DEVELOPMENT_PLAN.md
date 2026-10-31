@@ -31,11 +31,15 @@ Firebase Auth  +  Cloud Firestore  +  Firestore Security Rules
 Приложение — каталог реферальных программ.
 
 - **Private rows** (`/users/{uid}/rows/{rowId}`) — личная коллекция пользователя.
-  Поля: `companyName`, `category`, `referralLink`, `bonusDescription`,
+  Поля: `companyName`, `companyKey`, `category`, `referralLink`, `bonusDescription`,
   `isPublished`, `publicRowId`, `createdAt`, `updatedAt`.
 - **Public rows** (`/publicRows/{rowId}`) — опубликованные записи, видимые всем.
-  Поля: `companyName`, `category`, `referralLink`, `bonusDescription`,
+  Поля: `companyName`, `companyKey`, `category`, `referralLink`, `bonusDescription`,
   `ownerUid`, `sourceRowId`, `clicks`, `createdAt`, `updatedAt`.
+
+`companyKey = encodeURIComponent(companyName.trim().toLowerCase().replace(/\s+/g, ' '))`.
+`publicRowId = uid + '_' + companyKey`. Это делает ID детерминированным и позволяет
+правилам запретить второй публичный документ на ту же компанию у того же пользователя.
 
 Ключевое решение: **в `publicRows` лежат только реально опубликованные записи.**
 Никаких черновиков и поля `visible` в публичной коллекции. Наличие документа
@@ -50,12 +54,13 @@ Firebase Auth  +  Cloud Firestore  +  Firestore Security Rules
 | # | Вопрос | Решение |
 |---|--------|---------|
 | D1 | Кто наполняет публичный каталог? | Пользователь публикует свою private row (Publish/Unpublish) |
-| D2 | Что такое «Featured»? | Убрать. На MVP «Recent» + фильтр по категории |
-| D3 | Что такое `views`/`clicks`? | Счётчик кликов по реферальной ссылке. Делаем сразу |
+| D2 | Что такое «Featured»? | Убрать. На MVP каталог группируется по компаниям; фильтр по категории позже |
+| D3 | Что такое `views`/`clicks`? | Счётчик кликов по реферальной ссылке. Делаем в Phase 5 |
 | D4 | FirebaseUI? | Не использовать. Удалить зависимость и `authUiConfig.js`, обновить AGENTS.md |
 | D5 | Профиль: как редактировать? | Режим просмотра + Edit/Delete, подтверждение удаления, inline-валидация |
 | D6 | Email verification? | Отправлять при регистрации и требовать подтверждённый email для всего профиля (private rows) и публикации |
 | D7 | GitHub OAuth | Отложен. Не входит в текущий план |
+| D8 | Как устроен публичный каталог? | Группировка по компаниям; клик по компании копирует случайную ссылку. До 200 ссылок, загрузка одним запросом |
 
 ### Следствия D6 (email verification)
 
@@ -119,46 +124,54 @@ Acceptance: неподтверждённый пользователь видит
 профиль/создать private row; после подтверждения доступ появляется.
 Google-пользователи проходят сразу.
 
-### Phase 4. Публичный каталог (основная фича)
+### Phase 4. Публичный каталог по компаниям (основная фича)
 
 Data/API:
-- [ ] `publishUserRow(uid, rowId)` — создаёт/обновляет `publicRows` из private row.
-- [ ] `unpublishUserRow(uid, rowId)` — удаляет public-копию.
-- [ ] `listPublicRows({ category, sort, limit })` — recent / by category.
-- [ ] При редактировании private row обновлять и public-копию, если опубликована.
-- [ ] При удалении private row удалять public-копию.
+- [x] `publishUserRow(uid, rowId)` — upsert public-копии с детерминированным ID.
+- [x] `unpublishUserRow(uid, rowId)` — удаляет public-копию.
+- [x] `listPublicRows()` — до 200 документов, без orderBy, группировка в браузере.
+- [x] При редактировании опубликованной private row обновлять public-копию;
+      при смене компании — удалять старый public-документ и создавать новый.
+- [x] При удалении private row удалять public-копию.
+- [x] Запрещать публикацию второй строки на ту же компанию у того же пользователя.
 
 Rules:
-- [ ] Читать `publicRows` может любой.
-- [ ] Создавать public-копию может только владелец (`ownerUid == auth.uid`).
-- [ ] Обновлять/удалять public-копию может только владелец.
-- [ ] Валидация полей public-копии (типы, длины, допустимые категории, URL).
-- [ ] `sourceRowId` должен ссылаться на существующую private row владельца.
+- [x] Читать `publicRows` может любой.
+- [x] Создавать/обновлять/удалять public-копию может только verified владелец.
+- [x] `rowId == uid + '_' + companyKey`, `clicks == 0` при создании.
+- [x] `sourceRowId` ссылается на существующую private row владельца.
+- [x] Владелец не может менять `ownerUid`, `sourceRowId`, `companyKey`, `clicks`, `createdAt`.
+- [x] Базовая валидация полей public-копии (типы, длины, URL).
 
 UI:
-- [ ] На карточке private row — кнопка Publish / Unpublish и статус.
-- [ ] На главной — реальный список public rows (без placeholder).
-- [ ] Карточка public row: company, category, bonus, кнопка Open referral link.
-- [ ] Фильтр по категории; «Recent» по `createdAt desc`.
-- [ ] Убрать неоднозначную кнопку Featured (или заменить на Popular позже).
+- [x] На карточке private row — статус Published / Not published и кнопка Publish / Unpublish.
+- [x] На главной каталог загружается автоматически для всех пользователей.
+- [x] Карточка компании: название, категории, количество ссылок.
+- [x] Клик по названию компании копирует случайную ссылку из этой компании.
+- [x] Ссылки не рендерятся в DOM; хранятся только в JS-массиве.
+- [x] Пустое состояние и ошибка загрузки каталога.
 
 Tests:
-- [ ] Rules-тесты на publish/unpublish/ownership.
-- [ ] Unit-тесты нормализации и фильтров public rows.
-- [ ] Integration-тесты API на эмуляторе.
+- [x] Unit: `buildCompanyKey`, `buildPublicRowId`, нормализация, группировка, random pick.
+- [x] Unit: private row publish state, home view/model.
+- [x] Rules: read, create ownership, deterministic ID, source existence,
+      update/delete ownership, clicks/owner/source immutability.
+- [ ] Integration-тесты API на эмуляторе — отложены до Phase 8.
 
-Acceptance: пользователь публикует свою запись и видит её на главной без логина;
-чужую запись изменить/удалить нельзя.
+Acceptance: пользователь публикует запись и видит компанию на главной без логина;
+клик по компании копирует одну случайную ссылку; чужую запись изменить/удалить нельзя.
+Старые publicRows со схемой `title/description/visible` не отображаются и требуют
+удаления или переопубликации.
 
-### Phase 5. Клики по реферальной ссылке (делаем сразу)
+### Phase 5. Клики по реферальной ссылке (после Phase 4)
 
-- [ ] Метрика: клик по кнопке «Open referral link» в public-карточке.
-- [ ] `incrementClicks(publicRowId)` через `increment(1)`.
+- [ ] Метрика: клик по карточке компании, который копирует случайную ссылку.
+- [ ] `incrementClicks(publicRowId)` через `increment(1)` для выбранной строки.
 - [ ] Правило: анонимный и авторизованный пользователь может изменить **только**
       `clicks` и **только** на `+1`.
 - [ ] Владелец при редактировании контента не может менять `clicks`
       (правило требует `clicks` без изменений).
-- [ ] Показывать clicks в public-карточке и в private-карточке, если опубликована.
+- [ ] Показывать clicks в private-карточке, если опубликована.
 - [ ] Зафиксировать ограничение: от накрутки на бесплатном тарифе не защищает.
 
 Acceptance: клик увеличивает счётчик на 1; другие поля через это правило

@@ -41,7 +41,8 @@ Any visitor can:
 
 - open the main page
 - see login / registration / logout controls
-- click buttons to load public data
+- browse the referral catalog grouped by company
+- click a company to copy a random referral link
 
 Anonymous visitors cannot:
 
@@ -58,12 +59,13 @@ After login or registration, the user can:
 - create private records
 - edit private records
 - delete private records
+- publish or unpublish their own records
 - log out
 
 Authenticated users still cannot:
 
 - access another user's private data
-- write shared public data unless you explicitly add an admin workflow later
+- modify or delete another user's public records
 
 ## Recommended architecture
 
@@ -108,20 +110,33 @@ Recommended document shapes:
 
 ```text
 /publicRows/{rowId}
-  title
-  description
-  visible
+  companyName
+  companyKey
+  category
+  referralLink
+  bonusDescription
+  ownerUid
+  sourceRowId
+  clicks
   createdAt
   updatedAt
 ```
 
 ```text
 /users/{uid}/rows/{rowId}
-  title
-  description
+  companyName
+  companyKey
+  category
+  referralLink
+  bonusDescription
+  isPublished
+  publicRowId
   createdAt
   updatedAt
 ```
+
+`publicRowId = uid + '_' + companyKey`, where `companyKey` is the encoded
+normalized company name. Only published rows exist in `/publicRows`.
 
 ### Authorization
 
@@ -167,8 +182,8 @@ Should contain:
 - short description
 - login/register area
 - logout control when signed in
-- buttons to load public data
-- list or cards for public data
+- referral catalog grouped by company
+- click on a company copies a random referral link
 - link or button to open personal profile when signed in
 
 ### Personal profile page
@@ -187,7 +202,8 @@ Should contain:
 
 Create a small module for public reads, for example:
 
-- `listPublicRows()`
+- `listPublicRows()` — loads up to 200 published rows.
+- grouping and random selection live in `publicRows.model.js`.
 
 ### Private data API
 
@@ -197,6 +213,8 @@ Create a small module for user-owned data:
 - `createUserRow(uid, input)`
 - `updateUserRow(uid, rowId, input)`
 - `deleteUserRow(uid, rowId)`
+- `publishUserRow(uid, rowId)`
+- `unpublishUserRow(uid, rowId)`
 
 Do not call Firestore directly inside click handlers everywhere. Keep access in API modules.
 
@@ -310,18 +328,17 @@ Deliverables:
 
 Do these next, in this order:
 
-1. Change routing so the default page is a public home page, not forced login.
-2. Add a public home UI with auth controls and buttons for loading public data.
-3. Create `features/publicRows` modules and render Firestore public rows.
-4. Add a protected profile route.
-5. Create `features/privateRows` modules for user CRUD.
-6. Update tests for the new route behavior.
-7. Add deployment configuration for your chosen Pages provider.
+1. Add click counters for copied referral links.
+2. Harden Firestore rules validation for private and public rows.
+3. Add profile view/edit/delete UX.
+4. Add integration and end-to-end tests.
+5. Polish responsive layout and deployment checks.
 
 ## Suggested first implementation target
 
 The best next coding step is:
 
-`Implement public home route with anonymous access and a protected profile route.`
+`Add click counters for the public company catalog.`
 
-That is the right first step because your intended workflow depends on it before public/private data features can fit cleanly.
+That builds directly on the published catalog and keeps the app within the
+Firebase free tier.

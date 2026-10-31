@@ -2,9 +2,55 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isVerifiedUser() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isNonEmptyString(value, maxLength) {
+      return value is string && value.size() > 0 && value.size() <= maxLength;
+    }
+
+    function isOptionalString(value, maxLength) {
+      return value is string && value.size() <= maxLength;
+    }
+
+    function isValidPublicRow(data) {
+      return isNonEmptyString(data.companyName, 120)
+        && isNonEmptyString(data.companyKey, 1450)
+        && isNonEmptyString(data.category, 80)
+        && isNonEmptyString(data.referralLink, 2048)
+        && data.referralLink.matches('^https?://.+')
+        && isOptionalString(data.bonusDescription, 1000)
+        && isNonEmptyString(data.ownerUid, 128)
+        && isNonEmptyString(data.sourceRowId, 128)
+        && data.clicks is int
+        && data.clicks >= 0
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
     match /publicRows/{rowId} {
       allow read: if true;
-      allow create, update, delete: if false;
+
+      allow create: if isVerifiedUser()
+        && request.resource.data.ownerUid == request.auth.uid
+        && rowId == request.auth.uid + '_' + request.resource.data.companyKey
+        && request.resource.data.clicks == 0
+        && isValidPublicRow(request.resource.data)
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid)/rows/$(request.resource.data.sourceRowId));
+
+      allow update: if isVerifiedUser()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.sourceRowId == resource.data.sourceRowId
+        && request.resource.data.companyKey == resource.data.companyKey
+        && request.resource.data.clicks == resource.data.clicks
+        && request.resource.data.createdAt == resource.data.createdAt
+        && rowId == request.auth.uid + '_' + request.resource.data.companyKey
+        && isValidPublicRow(request.resource.data);
+
+      allow delete: if isVerifiedUser()
+        && resource.data.ownerUid == request.auth.uid;
     }
 
     match /users/{uid}/rows/{rowId} {
