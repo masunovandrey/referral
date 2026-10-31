@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  attachPublicRowClicks,
   buildPrivateRowInput,
   normalizePrivateRows
 } from '../../src/features/privateRows/privateRows.model.js';
@@ -75,7 +76,8 @@ describe('normalizePrivateRows', () => {
         bonusDescription: 'Owned by the current user',
         isPublished: false,
         publicRowId: '',
-        views: 12
+        views: 12,
+        clicks: 0
       }
     ]);
   });
@@ -103,12 +105,13 @@ describe('normalizePrivateRows', () => {
         bonusDescription: '',
         isPublished: true,
         publicRowId: 'user-a_example%20company',
-        views: 0
+        views: 0,
+        clicks: 0
       }
     ]);
   });
 
-  it('falls back to empty strings and zero views for missing row data', () => {
+  it('falls back to empty strings and zero counters for missing row data', () => {
     expect(
       normalizePrivateRows([
         {
@@ -126,8 +129,27 @@ describe('normalizePrivateRows', () => {
         bonusDescription: '',
         isPublished: false,
         publicRowId: '',
-        views: 0
+        views: 0,
+        clicks: 0
       }
+    ]);
+  });
+});
+
+describe('attachPublicRowClicks', () => {
+  it('adds public click counts to published rows and defaults others to zero', () => {
+    const rows = [
+      { id: 'published-row', isPublished: true, publicRowId: 'public-a' },
+      { id: 'unpublished-row', isPublished: false, publicRowId: '' },
+      { id: 'missing-public-row', isPublished: true, publicRowId: 'public-missing' }
+    ];
+
+    expect(
+      attachPublicRowClicks(rows, new Map([['public-a', 7]]))
+    ).toEqual([
+      { id: 'published-row', isPublished: true, publicRowId: 'public-a', clicks: 7 },
+      { id: 'unpublished-row', isPublished: false, publicRowId: '', clicks: 0 },
+      { id: 'missing-public-row', isPublished: true, publicRowId: 'public-missing', clicks: 0 }
     ]);
   });
 });

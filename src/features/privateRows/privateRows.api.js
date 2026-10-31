@@ -15,13 +15,40 @@ import {
   buildCompanyKey,
   buildPublicRowId
 } from '../publicRows/publicRows.model.js';
-import { buildPrivateRowInput, normalizePrivateRows } from './privateRows.model.js';
+import {
+  attachPublicRowClicks,
+  buildPrivateRowInput,
+  normalizePrivateRows
+} from './privateRows.model.js';
 
 export async function listUserRows(uid) {
   const userRowsQuery = query(collection(db, `users/${uid}/rows`), orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(userRowsQuery);
+  const rows = normalizePrivateRows(snapshot.docs);
+  const publishedRows = rows.filter((row) => row.isPublished && row.publicRowId);
 
-  return normalizePrivateRows(snapshot.docs);
+  if (publishedRows.length === 0) {
+    return attachPublicRowClicks(rows, new Map());
+  }
+
+  const clicksByPublicRowId = new Map();
+  const publicSnapshots = await Promise.all(
+    publishedRows.map(async (row) => ({
+      publicRowId: row.publicRowId,
+      snapshot: await getDoc(doc(db, 'publicRows', row.publicRowId))
+    }))
+  );
+
+  for (const { publicRowId, snapshot: publicSnapshot } of publicSnapshots) {
+    if (
+      publicSnapshot.exists() &&
+      Number.isInteger(publicSnapshot.data().clicks)
+    ) {
+      clicksByPublicRowId.set(publicRowId, publicSnapshot.data().clicks);
+    }
+  }
+
+  return attachPublicRowClicks(rows, clicksByPublicRowId);
 }
 
 export async function createUserRow(uid, input) {

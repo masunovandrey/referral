@@ -23,7 +23,10 @@ import {
 import { buildProfileViewModel } from './features/privateRows/profileViewModel.js';
 import { referralCategories } from './features/privateRows/privateRows.model.js';
 import { renderPrivateRows } from './features/privateRows/privateRows.ui.js';
-import { listPublicRows } from './features/publicRows/publicRows.api.js';
+import {
+  incrementPublicRowClicks,
+  listPublicRows
+} from './features/publicRows/publicRows.api.js';
 import {
   groupPublicRowsByCompany,
   pickRandomPublicRow
@@ -330,6 +333,12 @@ function wireCompanyCopyButtons(container, groups) {
 
         if (feedback) {
           feedback.textContent = `Copied referral link for ${group.companyName}.`;
+        }
+
+        try {
+          await incrementPublicRowClicks(row.id);
+        } catch (error) {
+          console.error('Failed to record referral click:', error);
         }
       } catch (error) {
         if (feedback) {

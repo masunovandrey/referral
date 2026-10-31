@@ -39,7 +39,7 @@ export function renderPrivateRows(rows, emptyState) {
                   <span>Bonus description</span>
                   <textarea name="bonusDescription" rows="3">${escapeHtml(row.bonusDescription)}</textarea>
                 </label>
-                <p class="row-meta">${row.isPublished ? 'Published' : 'Not published'} &middot; Views: ${row.views}</p>
+                <p class="row-meta">${formatRowMeta(row)}</p>
                 <div class="private-row-preview">
                   <a href="${escapeHtmlAttribute(row.referralLink)}" target="_blank" rel="noreferrer">Open referral link</a>
                 </div>
@@ -56,6 +56,18 @@ export function renderPrivateRows(rows, emptyState) {
         .join('')}
     </div>
   `;
+}
+
+function formatRowMeta(row) {
+  const parts = [row.isPublished ? 'Published' : 'Not published'];
+
+  if (row.isPublished) {
+    parts.push(`Clicks: ${Number.isInteger(row.clicks) ? row.clicks : 0}`);
+  }
+
+  parts.push(`Views: ${Number.isInteger(row.views) ? row.views : 0}`);
+
+  return parts.join(' &middot; ');
 }
 
 function escapeHtml(value) {

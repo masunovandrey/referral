@@ -22,7 +22,8 @@ describe('renderPrivateRows', () => {
         bonusDescription: 'My bonus details',
         isPublished: true,
         publicRowId: 'user-a_test%20company',
-        views: 5
+        views: 5,
+        clicks: 3
       }
     ];
     const emptyState = {
@@ -38,6 +39,7 @@ describe('renderPrivateRows', () => {
     expect(html).toContain('https://example.com');
     expect(html).toContain('My bonus details');
     expect(html).toContain('Views: 5');
+    expect(html).toContain('Clicks: 3');
     expect(html).toContain('Published');
     expect(html).toContain('data-role="toggle-publish"');
     expect(html).toContain('Unpublish');
@@ -61,6 +63,7 @@ describe('renderPrivateRows', () => {
     );
 
     expect(html).toContain('Not published');
+    expect(html).not.toContain('Clicks:');
     expect(html).toContain('>Publish</button>');
   });
 });

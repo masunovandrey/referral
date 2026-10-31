@@ -49,6 +49,10 @@ service cloud.firestore {
         && rowId == request.auth.uid + '_' + request.resource.data.companyKey
         && isValidPublicRow(request.resource.data);
 
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['clicks'])
+        && request.resource.data.clicks == resource.data.clicks + 1;
+
       allow delete: if isVerifiedUser()
         && resource.data.ownerUid == request.auth.uid;
     }

@@ -6,7 +6,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
-import { deleteDoc, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { deleteDoc, doc, getDoc, increment, setDoc, updateDoc } from 'firebase/firestore';
 
 const projectId = 'demo-referral';
 
@@ -144,6 +144,49 @@ describe('publicRows security rules', () => {
       updateDoc(doc(db, 'publicRows/user-a_acme'), {
         companyName: 'Changed Acme',
         updatedAt: new Date('2026-01-02T00:00:00.000Z')
+      })
+    );
+  });
+
+  it('allows anonymous users to increment clicks by one', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+
+    await assertSucceeds(
+      updateDoc(doc(db, 'publicRows/user-a_acme'), { clicks: increment(1) })
+    );
+  });
+
+  it('allows authenticated users to increment clicks by one', async () => {
+    const db = testEnv.authenticatedContext('user-b', { email_verified: true }).firestore();
+
+    await assertSucceeds(
+      updateDoc(doc(db, 'publicRows/user-a_acme'), { clicks: increment(1) })
+    );
+  });
+
+  it('blocks incrementing clicks by more than one', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+
+    await assertFails(
+      updateDoc(doc(db, 'publicRows/user-a_acme'), { clicks: increment(2) })
+    );
+  });
+
+  it('blocks decrementing clicks', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+
+    await assertFails(
+      updateDoc(doc(db, 'publicRows/user-a_acme'), { clicks: increment(-1) })
+    );
+  });
+
+  it('blocks changing other fields while incrementing clicks', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+
+    await assertFails(
+      updateDoc(doc(db, 'publicRows/user-a_acme'), {
+        clicks: increment(1),
+        companyName: 'Changed Acme'
       })
     );
   });

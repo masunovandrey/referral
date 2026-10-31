@@ -60,7 +60,18 @@ export function normalizePrivateRows(rows) {
       bonusDescription: typeof data.bonusDescription === 'string' ? data.bonusDescription : '',
       isPublished: data.isPublished === true,
       publicRowId: typeof data.publicRowId === 'string' ? data.publicRowId : '',
-      views: Number.isInteger(data.views) ? data.views : 0
+      views: Number.isInteger(data.views) ? data.views : 0,
+      clicks: Number.isInteger(data.clicks) ? data.clicks : 0
     };
   });
+}
+
+export function attachPublicRowClicks(rows, clicksByPublicRowId) {
+  return rows.map((row) => ({
+    ...row,
+    clicks:
+      row.isPublished && row.publicRowId
+        ? clicksByPublicRowId.get(row.publicRowId) ?? 0
+        : 0
+  }));
 }
