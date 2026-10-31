@@ -12,8 +12,7 @@
     "test:all": "npm run test && npm run test:rules"
   },
   "dependencies": {
-    "firebase": "^10.14.1",
-    "firebaseui": "^6.1.0"
+    "firebase": "^10.14.1"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^3.0.3",

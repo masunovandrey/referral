@@ -84,14 +84,15 @@ Use Firebase Authentication with:
 
 - email/password
 - Google
-- GitHub
 
-Prefer FirebaseUI for login and registration screens because it already handles:
+GitHub sign-in is deferred.
+
+The app uses a custom auth UI instead of FirebaseUI. It covers:
 
 - sign in
 - sign up
 - password reset
-- provider login
+- Google sign-in
 - common auth errors
 
 ### Database
@@ -142,7 +143,6 @@ src/
   firebase/
     app.js
     auth.js
-    authUiConfig.js
     firestore.js
   features/
     publicRows/

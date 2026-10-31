@@ -95,10 +95,11 @@ Acceptance: залогиненный пользователь не видит н
 
 ### Phase 2. Убрать FirebaseUI
 
-- [ ] Удалить `firebaseui` из `package.json`.
-- [ ] Удалить `src/firebase/authUiConfig.js`.
-- [ ] Обновить `AGENTS.md`: зафиксировать выбранный подход к auth UI.
-- [ ] Проверить, что сборка и тесты не ссылаются на FirebaseUI.
+- [x] Удалить `firebaseui` из `package.json` и `package-lock.json`.
+- [x] Удалить `src/firebase/authUiConfig.js`.
+- [x] Удалить мёртвый CSS-селектор `.firebaseui-container`.
+- [x] Обновить `AGENTS.md` и `ARCHITECTURE_GUIDE.md`: кастомный auth UI.
+- [x] Проверить, что сборка и тесты не ссылаются на FirebaseUI.
 
 Acceptance: нет мёртвого кода и лишней зависимости.
 

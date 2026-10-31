@@ -98,23 +98,29 @@ Firebase public config is allowed in frontend code.
 
 ## Auth UI strategy
 
-Prefer FirebaseUI for common authentication flows instead of custom-built auth screens.
+Use the existing custom auth UI instead of FirebaseUI.
 
-FirebaseUI should cover:
+The app currently supports:
 
 - email/password registration
 - email/password sign-in
 - Google sign-in
-- GitHub sign-in
-- forgot password
-- common authentication errors
-- account linking where supported
+- password reset
+- common authentication error messages
 
-Do not reimplement FirebaseUI internals unless explicitly requested.
+GitHub sign-in and account linking are intentionally deferred.
+
+Auth code lives in:
+
+- `src/features/home/homeView.js` — auth form markup
+- `src/app.js` — form event wiring and navigation
+- `src/firebase/auth.js` — Firebase Auth calls
+
+Do not add FirebaseUI or reimplement its internals unless explicitly requested.
 
 Custom app code should focus on:
 
-- mounting FirebaseUI on the login page
+- rendering the auth forms
 - reacting to Firebase Auth state changes
 - navigation after login/logout
 - route protection

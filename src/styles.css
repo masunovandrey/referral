@@ -52,10 +52,6 @@ select {
   margin-bottom: 24px;
 }
 
-.auth-panel .firebaseui-container {
-  max-width: none;
-}
-
 .eyebrow {
   margin: 0 0 8px;
   font-size: 0.8rem;
