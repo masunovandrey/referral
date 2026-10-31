@@ -8,7 +8,9 @@ service cloud.firestore {
     }
 
     match /users/{uid}/rows/{rowId} {
-      allow read, create, update, delete: if request.auth != null && request.auth.uid == uid;
+      allow read, create, update, delete: if request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.email_verified == true;
     }
   }
 }

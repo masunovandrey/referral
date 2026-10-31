@@ -105,14 +105,15 @@ Acceptance: нет мёртвого кода и лишней зависимос�
 
 ### Phase 3. Email verification (обязательно для профиля)
 
-- [ ] При регистрации вызывать `sendEmailVerification`.
-- [ ] На главной для неподтверждённых: баннер «Подтвердите email».
-- [ ] Кнопки Resend и «Я подтвердил» (`user.reload()` + `getIdToken(true)`).
-- [ ] Роутер: без `emailVerified` не пускать в `#/profile`.
-- [ ] Firestore Rules: `request.auth.token.email_verified == true` для
+- [x] При регистрации вызывать `sendEmailVerification`.
+- [x] На главной для неподтверждённых: баннер «Подтвердите email».
+- [x] Кнопки Resend и «Я подтвердил» (`user.reload()` + `getIdToken(true)`).
+- [x] Роутер: без `emailVerified` не пускать в `#/profile`.
+- [x] Firestore Rules: `request.auth.token.email_verified == true` для
       `/users/{uid}/rows/**` и для записи в `publicRows`.
-- [ ] Понятное сообщение при `permission-denied` из-за неподтверждённого email.
-- [ ] Unit-тесты на состояние verification и роутер.
+- [x] Понятное сообщение при `permission-denied` из-за неподтверждённого email.
+- [x] Unit-тесты на состояние verification и роутер.
+- [x] Continue URL письма ведёт обратно в приложение (origin + pathname).
 
 Acceptance: неподтверждённый пользователь видит баннер и не может открыть
 профиль/создать private row; после подтверждения доступ появляется.

@@ -79,9 +79,10 @@ Required security behavior:
 Anyone can read public rows intended for public display
 Anonymous users cannot write public rows
 Anonymous users cannot read private user rows
-Authenticated users can read their own private rows
-Authenticated users can create, update, and delete their own private rows
+Authenticated users with a verified email can read their own private rows
+Authenticated users with a verified email can create, update, and delete their own private rows
 Authenticated users cannot read, create, update, or delete another user's private rows
+Unverified users cannot read or write private rows, even their own
 
 Never put private secrets in frontend code.
 
@@ -106,9 +107,12 @@ The app currently supports:
 - email/password sign-in
 - Google sign-in
 - password reset
+- email verification
 - common authentication error messages
 
-GitHub sign-in and account linking are intentionally deferred.
+Email verification is required for the private profile area. Unverified users
+can still browse the public home page. GitHub sign-in and account linking are
+intentionally deferred.
 
 Auth code lives in:
 

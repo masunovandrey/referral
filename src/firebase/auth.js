@@ -3,6 +3,7 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -33,7 +34,43 @@ export function signUpWithEmail({ name, email, password }) {
       await updateProfile(credential.user, { displayName: name });
     }
 
+    if (credential.user) {
+      await sendVerificationEmail(credential.user).catch((error) => {
+        console.error('Failed to send verification email:', error);
+      });
+    }
+
     return credential;
+  });
+}
+
+export function resendVerificationEmail() {
+  const user = auth.currentUser;
+
+  if (!user) {
+    return Promise.reject(new Error('No authenticated user'));
+  }
+
+  return sendVerificationEmail(user);
+}
+
+export async function reloadCurrentUser() {
+  const user = auth.currentUser;
+
+  if (!user) {
+    return null;
+  }
+
+  await user.reload();
+  await user.getIdToken(true);
+
+  return auth.currentUser;
+}
+
+function sendVerificationEmail(user) {
+  return sendEmailVerification(user, {
+    url: `${window.location.origin}${window.location.pathname}`,
+    handleCodeInApp: false
   });
 }
 

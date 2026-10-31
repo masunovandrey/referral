@@ -12,7 +12,7 @@ export function getHashPath(hash) {
   return normalized.startsWith('/') ? normalized : `/${normalized}`;
 }
 
-export function resolveRoute(hash, isAuthenticated) {
+export function resolveRoute(hash, isAuthenticated, isEmailVerified = false) {
   const path = getHashPath(hash);
 
   if (path === routes.home) {
@@ -20,7 +20,7 @@ export function resolveRoute(hash, isAuthenticated) {
   }
 
   if (path === routes.profile) {
-    return isAuthenticated ? routes.profile : routes.home;
+    return isAuthenticated && isEmailVerified ? routes.profile : routes.home;
   }
 
   return routes.home;

@@ -13,18 +13,23 @@ describe('getHashPath', () => {
 
 describe('resolveRoute', () => {
   it('keeps anonymous users on the public home route', () => {
-    expect(resolveRoute('#/', false)).toBe(routes.home);
+    expect(resolveRoute('#/', false, false)).toBe(routes.home);
   });
 
   it('redirects anonymous users away from the profile route', () => {
-    expect(resolveRoute('#/profile', false)).toBe(routes.home);
+    expect(resolveRoute('#/profile', false, false)).toBe(routes.home);
   });
 
   it('allows authenticated users to stay on the public home route', () => {
-    expect(resolveRoute('#/', true)).toBe(routes.home);
+    expect(resolveRoute('#/', true, true)).toBe(routes.home);
+    expect(resolveRoute('#/', true, false)).toBe(routes.home);
   });
 
-  it('allows authenticated users to access the profile route', () => {
-    expect(resolveRoute('#/profile', true)).toBe(routes.profile);
+  it('allows verified authenticated users to access the profile route', () => {
+    expect(resolveRoute('#/profile', true, true)).toBe(routes.profile);
+  });
+
+  it('redirects unverified authenticated users away from the profile route', () => {
+    expect(resolveRoute('#/profile', true, false)).toBe(routes.home);
   });
 });

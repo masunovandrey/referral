@@ -109,6 +109,18 @@ h1 {
   padding-top: 24px;
 }
 
+.verification-banner {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  padding: 20px;
+}
+
+.verification-banner h2 {
+  margin-top: 0;
+}
+
 .auth-section {
   border-top: 1px solid rgba(31, 41, 51, 0.1);
   margin-top: 24px;

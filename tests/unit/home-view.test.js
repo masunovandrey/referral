@@ -13,11 +13,12 @@ describe('renderHomeView', () => {
     expect(html).toContain('id="load-recent-public"');
     expect(html).not.toContain('id="logout-button"');
     expect(html).not.toContain('id="open-profile-button"');
+    expect(html).not.toContain('id="resend-verification-button"');
   });
 
-  it('hides the auth form and shows identity for authenticated users', () => {
+  it('hides the auth form and shows identity for verified users', () => {
     const html = renderHomeView(
-      buildHomeViewModel({ uid: 'user-a', email: 'user@example.com' }),
+      buildHomeViewModel({ uid: 'user-a', email: 'user@example.com', emailVerified: true }),
       buildEmailAuthViewModel('login')
     );
 
@@ -27,11 +28,30 @@ describe('renderHomeView', () => {
     expect(html).toContain('Signed in as user@example.com');
     expect(html).toContain('id="logout-button"');
     expect(html).toContain('id="open-profile-button"');
+    expect(html).not.toContain('id="resend-verification-button"');
+  });
+
+  it('renders the verification banner and hides the profile button for unverified users', () => {
+    const html = renderHomeView(
+      buildHomeViewModel({ uid: 'user-a', email: 'user@example.com', emailVerified: false }),
+      buildEmailAuthViewModel('login')
+    );
+
+    expect(html).toContain('id="resend-verification-button"');
+    expect(html).toContain('id="refresh-verification-button"');
+    expect(html).toContain('id="verification-feedback"');
+    expect(html).toContain('user@example.com');
+    expect(html).not.toContain('id="open-profile-button"');
+    expect(html).not.toContain('id="email-auth-form"');
   });
 
   it('escapes the identity label', () => {
     const html = renderHomeView(
-      buildHomeViewModel({ uid: 'user-a', email: '<script>alert(1)</script>' }),
+      buildHomeViewModel({
+        uid: 'user-a',
+        email: '<script>alert(1)</script>',
+        emailVerified: true
+      }),
       buildEmailAuthViewModel('login')
     );
 

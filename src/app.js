@@ -2,6 +2,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import {
   auth,
   logInWithEmail,
+  reloadCurrentUser,
+  resendVerificationEmail,
   resetPassword,
   signInWithGoogle,
   signOutUser,
@@ -28,7 +30,11 @@ export function initApp(root) {
   let emailAuthMode = 'login';
 
   const render = () => {
-    const nextRoute = resolveRoute(window.location.hash, Boolean(currentUser));
+    const nextRoute = resolveRoute(
+      window.location.hash,
+      Boolean(currentUser),
+      Boolean(currentUser?.emailVerified)
+    );
     const currentPath = getHashPath(window.location.hash);
 
     if (nextRoute !== currentPath) {
@@ -37,14 +43,36 @@ export function initApp(root) {
     }
 
     if (nextRoute === routes.home) {
-      renderHomePage(root, currentUser, emailAuthMode, (nextMode) => {
-        emailAuthMode = nextMode;
-        render();
-      });
+      renderHomePage(
+        root,
+        currentUser,
+        emailAuthMode,
+        (nextMode) => {
+          emailAuthMode = nextMode;
+          render();
+        },
+        refreshUser
+      );
       return;
     }
 
     renderProfilePage(root, currentUser);
+  };
+
+  const refreshUser = async () => {
+    const refreshedUser = await reloadCurrentUser();
+
+    if (!refreshedUser) {
+      return false;
+    }
+
+    currentUser = refreshedUser;
+
+    if (refreshedUser.emailVerified) {
+      render();
+    }
+
+    return refreshedUser.emailVerified;
   };
 
   onAuthStateChanged(auth, (user) => {
@@ -61,7 +89,7 @@ export function initApp(root) {
   render();
 }
 
-function renderHomePage(root, user, emailAuthMode, setEmailAuthMode) {
+function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser) {
   const viewModel = buildHomeViewModel(user);
   const emailAuthViewModel = buildEmailAuthViewModel(emailAuthMode);
 
@@ -73,9 +101,15 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode) {
       navigateTo(routes.home);
     });
 
-    root.querySelector('#open-profile-button')?.addEventListener('click', () => {
-      navigateTo(routes.profile);
-    });
+    if (viewModel.showProfileButton) {
+      root.querySelector('#open-profile-button')?.addEventListener('click', () => {
+        navigateTo(routes.profile);
+      });
+    }
+
+    if (viewModel.showVerificationBanner) {
+      wireVerificationActions(root, refreshUser);
+    }
 
     wirePublicDataButtons(root);
     return;
@@ -116,6 +150,46 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode) {
   });
 
   wirePublicDataButtons(root);
+}
+
+function wireVerificationActions(root, refreshUser) {
+  const feedback = root.querySelector('#verification-feedback');
+
+  root.querySelector('#resend-verification-button')?.addEventListener('click', async () => {
+    if (feedback) {
+      feedback.textContent = 'Sending verification email...';
+    }
+
+    try {
+      await resendVerificationEmail();
+
+      if (feedback) {
+        feedback.textContent = 'Verification email sent. Check your inbox.';
+      }
+    } catch (error) {
+      if (feedback) {
+        feedback.textContent = getAuthErrorMessage(error);
+      }
+    }
+  });
+
+  root.querySelector('#refresh-verification-button')?.addEventListener('click', async () => {
+    if (feedback) {
+      feedback.textContent = 'Checking verification status...';
+    }
+
+    try {
+      const isVerified = await refreshUser();
+
+      if (!isVerified && feedback) {
+        feedback.textContent = 'Email is not confirmed yet. Check your inbox and try again.';
+      }
+    } catch (error) {
+      if (feedback) {
+        feedback.textContent = 'Could not refresh verification status. Try again.';
+      }
+    }
+  });
 }
 
 function renderProfilePage(root, user) {
@@ -287,7 +361,7 @@ async function handleCreateUserRow(root, userId, form) {
     });
   } catch (error) {
     console.error('Failed to create referral entry:', error);
-    feedback.textContent = 'Failed to create referral entry. Check authentication and Firestore access.';
+    feedback.textContent = `Failed to create referral entry. ${getPrivateRowsErrorMessage(error)}`;
   }
 }
 
@@ -307,14 +381,19 @@ async function handleEmailAuth(root, mode, form) {
   feedback.textContent = mode === 'signup' ? 'Creating account...' : 'Logging in...';
 
   try {
-    if (mode === 'signup') {
-      await signUpWithEmail(input);
-    } else {
-      await logInWithEmail(input);
-    }
+    const credential =
+      mode === 'signup'
+        ? await signUpWithEmail(input)
+        : await logInWithEmail(input);
 
     form.reset();
-    navigateTo(routes.profile);
+
+    if (credential?.user?.emailVerified) {
+      navigateTo(routes.profile);
+      return;
+    }
+
+    navigateTo(routes.home);
   } catch (error) {
     feedback.textContent = getAuthErrorMessage(error);
   }
@@ -345,7 +424,7 @@ async function loadPrivateRows(root, viewModel) {
     container.innerHTML = `
       <div class="placeholder">
         <h3>Failed to load referral entries</h3>
-        <p>Check authentication and Firestore access, then try again.</p>
+        <p>${getPrivateRowsErrorMessage(error)}</p>
       </div>
     `;
   }
@@ -401,7 +480,7 @@ async function handleUpdateUserRow(root, userId, rowId, form) {
       userId
     });
   } catch (error) {
-    feedback.textContent = 'Failed to update referral entry. Check authentication and Firestore access.';
+    feedback.textContent = `Failed to update referral entry. ${getPrivateRowsErrorMessage(error)}`;
   }
 }
 
@@ -421,8 +500,18 @@ async function handleDeleteUserRow(root, userId, rowId, form) {
       userId
     });
   } catch (error) {
-    feedback.textContent = 'Failed to delete referral entry. Check authentication and Firestore access.';
+    feedback.textContent = `Failed to delete referral entry. ${getPrivateRowsErrorMessage(error)}`;
   }
+}
+
+function getPrivateRowsErrorMessage(error) {
+  const code = error && typeof error === 'object' && 'code' in error ? error.code : '';
+
+  if (code === 'permission-denied') {
+    return 'Confirm your email to access your referral entries.';
+  }
+
+  return 'Check authentication and Firestore access, then try again.';
 }
 
 function getAuthErrorMessage(error) {
@@ -442,6 +531,12 @@ function getAuthErrorMessage(error) {
       return 'Password should be at least 6 characters.';
     case 'auth/popup-closed-by-user':
       return 'Google sign-in was cancelled.';
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Try again later.';
+    case 'auth/unauthorized-continue-uri':
+      return 'This domain is not authorized for email verification links.';
+    case 'auth/network-request-failed':
+      return 'Network error. Check your connection and try again.';
     default:
       return 'Authentication failed. Check your details and try again.';
   }

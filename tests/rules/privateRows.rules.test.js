@@ -71,19 +71,19 @@ describe('private user rows security rules', () => {
   });
 
   it('allows authenticated users to read their own rows', async () => {
-    const db = testEnv.authenticatedContext('user-a').firestore();
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertSucceeds(getDoc(doc(db, 'users/user-a/rows/seed-private-row')));
   });
 
   it('allows authenticated users to create their own rows', async () => {
-    const db = testEnv.authenticatedContext('user-a').firestore();
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertSucceeds(setDoc(doc(db, 'users/user-a/rows/new-private-row'), privateRow));
   });
 
   it('allows authenticated users to update their own rows', async () => {
-    const db = testEnv.authenticatedContext('user-a').firestore();
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertSucceeds(updateDoc(doc(db, 'users/user-a/rows/seed-private-row'), {
       title: 'Changed private referral',
@@ -92,25 +92,25 @@ describe('private user rows security rules', () => {
   });
 
   it('allows authenticated users to delete their own rows', async () => {
-    const db = testEnv.authenticatedContext('user-a').firestore();
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertSucceeds(deleteDoc(doc(db, 'users/user-a/rows/seed-private-row')));
   });
 
   it('blocks authenticated users from reading another user rows', async () => {
-    const db = testEnv.authenticatedContext('user-a').firestore();
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertFails(getDoc(doc(db, 'users/user-b/rows/seed-private-row')));
   });
 
   it('blocks authenticated users from creating rows under another user UID', async () => {
-    const db = testEnv.authenticatedContext('user-a').firestore();
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertFails(setDoc(doc(db, 'users/user-b/rows/new-private-row'), privateRow));
   });
 
   it('blocks authenticated users from updating another user rows', async () => {
-    const db = testEnv.authenticatedContext('user-a').firestore();
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertFails(updateDoc(doc(db, 'users/user-b/rows/seed-private-row'), {
       title: 'Changed private referral',
@@ -119,8 +119,35 @@ describe('private user rows security rules', () => {
   });
 
   it('blocks authenticated users from deleting another user rows', async () => {
-    const db = testEnv.authenticatedContext('user-a').firestore();
+    const db = testEnv.authenticatedContext('user-a', { email_verified: true }).firestore();
 
     await assertFails(deleteDoc(doc(db, 'users/user-b/rows/seed-private-row')));
+  });
+
+  it('blocks unverified users from reading their own rows', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: false }).firestore();
+
+    await assertFails(getDoc(doc(db, 'users/user-a/rows/seed-private-row')));
+  });
+
+  it('blocks unverified users from creating their own rows', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: false }).firestore();
+
+    await assertFails(setDoc(doc(db, 'users/user-a/rows/new-private-row'), privateRow));
+  });
+
+  it('blocks unverified users from updating their own rows', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: false }).firestore();
+
+    await assertFails(updateDoc(doc(db, 'users/user-a/rows/seed-private-row'), {
+      title: 'Changed private referral',
+      updatedAt: new Date('2026-01-02T00:00:00.000Z')
+    }));
+  });
+
+  it('blocks unverified users from deleting their own rows', async () => {
+    const db = testEnv.authenticatedContext('user-a', { email_verified: false }).firestore();
+
+    await assertFails(deleteDoc(doc(db, 'users/user-a/rows/seed-private-row')));
   });
 });

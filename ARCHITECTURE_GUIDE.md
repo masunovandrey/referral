@@ -129,8 +129,9 @@ Authorization must be enforced in Firestore Security Rules:
 
 - everyone can read public rows
 - nobody anonymous can write public rows
-- authenticated users can read only their own private rows
-- authenticated users can create/update/delete only their own private rows
+- authenticated users with a verified email can read only their own private rows
+- authenticated users with a verified email can create/update/delete only their own private rows
+- unverified users cannot access private rows, even their own
 
 Frontend checks are useful for UX, but rules are the real security boundary.
 

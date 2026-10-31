@@ -21,6 +21,7 @@ export function renderHomeView(viewModel, emailAuthViewModel) {
           ${viewModel.showLogout ? '<button id="logout-button" class="action-button" type="button">Log out</button>' : ''}
         </div>
         <p class="lede">${lede}</p>
+        ${viewModel.showVerificationBanner ? renderVerificationBanner(viewModel.identityLabel) : ''}
         <div class="action-row">
           ${publicDataButtons}
           ${viewModel.showProfileButton ? '<button id="open-profile-button" class="action-button" type="button">View your profile</button>' : ''}
@@ -32,6 +33,20 @@ export function renderHomeView(viewModel, emailAuthViewModel) {
         ${viewModel.showAuthSection ? renderAuthSection(emailAuthViewModel) : ''}
       </section>
     </main>
+  `;
+}
+
+function renderVerificationBanner(emailLabel) {
+  return `
+        <section class="verification-banner">
+          <h2>Confirm your email</h2>
+          <p>We sent a verification link to ${escapeHtml(emailLabel)}. Confirm it to access your profile.</p>
+          <div class="action-row">
+            <button id="resend-verification-button" class="action-button" type="button">Resend email</button>
+            <button id="refresh-verification-button" class="action-button secondary-button" type="button">I confirmed my email</button>
+          </div>
+          <p id="verification-feedback" class="form-feedback" aria-live="polite"></p>
+        </section>
   `;
 }
 
