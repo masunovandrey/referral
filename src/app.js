@@ -38,6 +38,7 @@ import {
   listPublicRows
 } from './features/publicRows/publicRows.api.js';
 import {
+  filterPublicRows,
   groupPublicRowsByCompany,
   pickRandomPublicRow
 } from './features/publicRows/publicRows.model.js';
@@ -45,6 +46,10 @@ import { renderPublicRows } from './features/publicRows/publicRows.ui.js';
 import { getHashPath, navigateTo, resolveRoute, routes } from './router.js';
 
 let profileToastTimer;
+
+let catalogQuery = '';
+let catalogCategory = '';
+let catalogCategories = [];
 
 export function initApp(root) {
   let currentUser = auth.currentUser;
@@ -104,6 +109,9 @@ export function initApp(root) {
     if (!user) {
       emailAuthMode = 'login';
       loginOpen = false;
+      catalogQuery = '';
+      catalogCategory = '';
+      catalogCategories = [];
     }
 
     render();
@@ -117,7 +125,12 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
   const viewModel = buildHomeViewModel(user);
   const emailAuthViewModel = buildEmailAuthViewModel(emailAuthMode);
 
-  root.innerHTML = renderHomeView(viewModel, emailAuthViewModel, { groups: [], categories: [], selectedCategory: '', query: '' }, loginOpen);
+  root.innerHTML = renderHomeView(viewModel, emailAuthViewModel, {
+    groups: [],
+    categories: catalogCategories,
+    selectedCategory: catalogCategory,
+    query: catalogQuery
+  }, loginOpen);
 
   if (viewModel.isAuthenticated) {
     root.querySelector('#logout-button')?.addEventListener('click', async () => {
@@ -174,7 +187,20 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
     });
   }
 
-  void loadPublicCatalog(root);
+    const catalogSearchInput = root.querySelector('.catalog-search__input');
+    catalogSearchInput?.addEventListener('input', () => {
+      catalogQuery = catalogSearchInput.value ?? '';
+      void loadPublicCatalog(root);
+    });
+
+    root.querySelectorAll('.chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        catalogCategory = chip.dataset.category ?? '';
+        void loadPublicCatalog(root);
+      });
+    });
+
+    void loadPublicCatalog(root);
 }
 
 function wireVerificationActions(root, refreshUser) {
@@ -306,7 +332,9 @@ async function loadPublicCatalog(root) {
 
   try {
     const rows = await listPublicRows();
-    const groups = groupPublicRowsByCompany(rows);
+    const filteredRows = filterPublicRows(rows, { query: catalogQuery, category: catalogCategory });
+    const groups = groupPublicRowsByCompany(filteredRows);
+    catalogCategories = [...new Set(groups.flatMap((group) => group.categories))].sort();
 
     container.classList.remove('placeholder');
     container.innerHTML = renderPublicRows(groups);
