@@ -58,6 +58,7 @@ export function renderCompanyCards({ groups = [] } = {}) {
           ${group.companyName}
         </h3>
         <p>${group.categories.join(', ')} · ${group.linkCount} referral links</p>
+        <button class="public-row-card__action" type="button" data-company-key="${group.companyKey}">Copy</button>
       </article>
     `
   );

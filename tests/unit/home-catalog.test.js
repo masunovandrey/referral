@@ -39,6 +39,7 @@ describe('homeCatalog', () => {
 
     expect(html).toContain('Acme');
     expect(html).toContain('fallback-logo');
+    expect(html).toContain('data-company-key="acme"');
   });
 
   it('renders empty state and adds cta for logged in users', () => {
