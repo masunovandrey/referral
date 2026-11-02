@@ -1,10 +1,24 @@
-export function renderHomeView(viewModel, emailAuthViewModel) {
+import { renderHeader } from '../ui/header.js';
+import { renderHero, renderSearchInput, renderCategoryChips, renderCompanyCards } from './homeCatalog.js';
+
+export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups: [], categories: [], selectedCategory: '', query: '' }) {
   const lede = viewModel.isAuthenticated
     ? `Signed in as ${escapeHtml(viewModel.identityLabel)}.`
     : 'Anyone can view this page. Sign in to access your personal profile.';
 
+  const header = renderHeader({
+    isAuthenticated: viewModel.isAuthenticated,
+    isEmailVerified: viewModel.isEmailVerified
+  });
+
+  const hero = renderHero();
+  const searchInput = renderSearchInput({ value: catalog.query });
+  const chips = renderCategoryChips({ categories: catalog.categories, selectedCategory: catalog.selectedCategory });
+  const catalogContent = renderCompanyCards({ groups: catalog.groups });
+
   return `
     <main class="layout">
+      ${header}
       <section class="panel auth-panel">
         <div class="panel-header">
           <div>
@@ -20,9 +34,11 @@ export function renderHomeView(viewModel, emailAuthViewModel) {
             <button id="open-profile-button" class="action-button" type="button">View your profile</button>
           </div>
         ` : ''}
+        ${hero}
+        ${searchInput}
+        ${chips}
         <div id="public-catalog-container" class="placeholder">
-          <h2>Referral catalog</h2>
-          <p>Loading published referral links...</p>
+          ${catalogContent}
         </div>
         ${viewModel.showAuthSection ? renderAuthSection(emailAuthViewModel) : ''}
       </section>
