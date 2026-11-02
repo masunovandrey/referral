@@ -32,6 +32,7 @@ import {
   renderPrivateRowsEmptyState,
   setRowEditMode
 } from './features/privateRows/privateRows.ui.js';
+import { renderCollapsibleForm } from './features/ui/collapsibleForm.js';
 import {
   incrementPublicRowClicks,
   listPublicRows
@@ -236,32 +237,8 @@ function renderProfilePage(root, user) {
         </section>
         <section class="profile-section">
           <h2>Add a referral entry</h2>
-          <form id="private-row-form" class="profile-form">
-            <label class="field">
-              <span>Company name</span>
-              <input name="companyName" type="text" autocomplete="organization" />
-              <small class="field-error" data-role="companyName-error"></small>
-            </label>
-            <label class="field">
-              <span>Category</span>
-              <select name="category" required>
-                <option value="" selected disabled>Select category</option>
-                ${categoryOptions}
-              </select>
-              <small class="field-error" data-role="category-error"></small>
-            </label>
-            <label class="field">
-              <span>Referral link</span>
-              <input name="referralLink" type="url" autocomplete="url" />
-              <small class="field-error" data-role="referralLink-error"></small>
-            </label>
-            <label class="field">
-              <span>Bonus description</span>
-              <textarea name="bonusDescription" rows="4"></textarea>
-              <small class="field-error" data-role="bonusDescription-error"></small>
-            </label>
-            <button class="action-button" type="submit">${escapeHtml(viewModel.submitButtonLabel)}</button>
-          </form>
+          <button id="collapsible-add-toggle" class="action-button secondary-button" type="button" data-collapsible-open>Show add referral entry</button>
+          <div id="collapsible-form-container"></div>
         </section>
       </section>
       <div id="profile-toast" class="profile-toast" role="status" aria-live="polite" hidden></div>
@@ -277,13 +254,23 @@ function renderProfilePage(root, user) {
     navigateTo(routes.home);
   });
 
-  const createForm = root.querySelector('#private-row-form');
+  const createForm = root.querySelector('#collapsible-form');
   createForm?.addEventListener('submit', (event) => {
     event.preventDefault();
     void handleCreateUserRow(root, viewModel, event.currentTarget);
   });
   createForm?.addEventListener('input', handlePrivateRowsInput);
   createForm?.addEventListener('change', handlePrivateRowsInput);
+
+  const collapsibleAddToggle = root.querySelector('#collapsible-add-toggle');
+  const collapsibleFormContainer = root.querySelector('#collapsible-form-container');
+  collapsibleAddToggle?.addEventListener('click', () => {
+    const shouldOpen = collapsibleAddToggle.dataset.open !== 'true';
+    collapsibleAddToggle.dataset.open = shouldOpen ? 'true' : '';
+    collapsibleFormContainer.innerHTML = shouldOpen
+      ? renderCollapsibleForm({ isOpen: true })
+      : '';
+  });
 
   void loadPrivateRows(root, viewModel);
 }
