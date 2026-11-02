@@ -285,6 +285,7 @@ h1 {
 .public-row-list {
   display: grid;
   gap: 16px;
+  min-height: 240px;
 }
 
 .public-row-card {
@@ -327,6 +328,34 @@ h1 {
 .company-copy-button:hover,
 .company-copy-button:focus-visible {
   text-decoration: underline;
+}
+
+@keyframes collapsible-form-open {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.collapsible-form {
+  border: 1px solid rgba(31, 41, 51, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 16px;
+  animation: collapsible-form-open 180ms ease-out;
+}
+
+.collapsible-form__title {
+  margin: 0 0 12px;
+}
+
+.collapsible-form .profile-form {
+  margin-top: 4px;
 }
 
 @media (max-width: 640px) {
