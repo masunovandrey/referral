@@ -49,6 +49,7 @@ let profileToastTimer;
 export function initApp(root) {
   let currentUser = auth.currentUser;
   let emailAuthMode = 'login';
+  let loginOpen = false;
 
   const render = () => {
     const nextRoute = resolveRoute(
@@ -72,7 +73,8 @@ export function initApp(root) {
           emailAuthMode = nextMode;
           render();
         },
-        refreshUser
+        refreshUser,
+        loginOpen
       );
       return;
     }
@@ -101,6 +103,7 @@ export function initApp(root) {
 
     if (!user) {
       emailAuthMode = 'login';
+      loginOpen = false;
     }
 
     render();
@@ -110,11 +113,11 @@ export function initApp(root) {
   render();
 }
 
-function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser) {
+function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, loginOpen) {
   const viewModel = buildHomeViewModel(user);
   const emailAuthViewModel = buildEmailAuthViewModel(emailAuthMode);
 
-  root.innerHTML = renderHomeView(viewModel, emailAuthViewModel);
+  root.innerHTML = renderHomeView(viewModel, emailAuthViewModel, { groups: [], categories: [], selectedCategory: '', query: '' }, loginOpen);
 
   if (viewModel.isAuthenticated) {
     root.querySelector('#logout-button')?.addEventListener('click', async () => {
@@ -148,6 +151,10 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
       }
 
       void handlePasswordReset(root, form);
+    });
+
+    root.querySelector('[data-role="open-login"]')?.addEventListener('click', () => {
+      renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, !loginOpen);
     });
 
     root.querySelector('#google-sign-in-button')?.addEventListener('click', async () => {

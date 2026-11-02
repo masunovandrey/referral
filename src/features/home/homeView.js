@@ -1,7 +1,7 @@
 import { renderHeader } from '../ui/header.js';
 import { renderHero, renderSearchInput, renderCategoryChips, renderCompanyCards } from './homeCatalog.js';
 
-export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups: [], categories: [], selectedCategory: '', query: '' }) {
+export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups: [], categories: [], selectedCategory: '', query: '' }, loginOpen = false) {
   const lede = viewModel.isAuthenticated
     ? `Signed in as ${escapeHtml(viewModel.identityLabel)}.`
     : 'Anyone can view this page. Sign in to access your personal profile.';
@@ -40,7 +40,7 @@ export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups
         <div id="public-catalog-container" class="placeholder">
           ${catalogContent}
         </div>
-        ${viewModel.showAuthSection ? renderAuthSection(emailAuthViewModel) : ''}
+        ${viewModel.showAuthSection && loginOpen ? renderAuthSection(emailAuthViewModel) : ''}
       </section>
     </main>
   `;

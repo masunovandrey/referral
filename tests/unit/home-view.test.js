@@ -4,8 +4,13 @@ import { buildHomeViewModel } from '../../src/features/home/homeViewModel.js';
 import { renderHomeView } from '../../src/features/home/homeView.js';
 
 describe('renderHomeView', () => {
-  it('renders the auth form for anonymous users', () => {
-    const html = renderHomeView(buildHomeViewModel(null), buildEmailAuthViewModel('login'));
+  it('renders the auth form for anonymous users when login is open', () => {
+    const html = renderHomeView(
+      buildHomeViewModel(null),
+      buildEmailAuthViewModel('login'),
+      { groups: [], categories: [], selectedCategory: '', query: '' },
+      true
+    );
 
     expect(html).toContain('id="email-auth-form"');
     expect(html).toContain('id="google-sign-in-button"');
@@ -15,6 +20,15 @@ describe('renderHomeView', () => {
     expect(html).not.toContain('id="logout-button"');
     expect(html).not.toContain('id="open-profile-button"');
     expect(html).not.toContain('id="resend-verification-button"');
+  });
+
+  it('hides the auth form by default and shows it when login is open', () => {
+    const viewModel = buildHomeViewModel(null);
+    const emailAuthViewModel = buildEmailAuthViewModel('login');
+    const catalog = { groups: [], categories: [], selectedCategory: '', query: '' };
+
+    expect(renderHomeView(viewModel, emailAuthViewModel, catalog)).not.toContain('id="email-auth-form"');
+    expect(renderHomeView(viewModel, emailAuthViewModel, catalog, true)).toContain('id="email-auth-form"');
   });
 
   it('hides the auth form and shows identity for verified users', () => {
