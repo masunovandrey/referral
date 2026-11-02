@@ -296,7 +296,7 @@ Acceptance: нельзя записать мусор, подменить вла�
 - [ ] Unit: модели, view-models, нормализация, роутер.
 - [ ] Rules: public read, ownership, publish/unpublish, validation, clicks,
       email verification.
-- [ ] Integration (эмулятор): API publish/list/update/delete/incrementClicks.
+- [x] Integration (эмулятор): API list/increment для publicRows (publish/update/delete — в работе).
 - [ ] E2E (Playwright, Auth + Firestore emulator):
       аноним видит каталог; регистрация; блокировка профиля без verification;
       создание private row; публикация; клик по ссылке; редактирование;
