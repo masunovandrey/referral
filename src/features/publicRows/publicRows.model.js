@@ -83,6 +83,21 @@ export function pickRandomPublicRow(rows, random = Math.random) {
   return rows[index];
 }
 
+export function filterPublicRows(rows, { query = '', category = '' } = {}) {
+  const normalizedQuery = String(query ?? '').trim().toLowerCase();
+  const normalizedCategory = String(category ?? '').trim();
+
+  return rows.filter((row) => {
+    const matchesCategory = !normalizedCategory || row.category === normalizedCategory;
+    const matchesQuery =
+      !normalizedQuery ||
+      String(row.companyName ?? '').toLowerCase().includes(normalizedQuery) ||
+      String(row.category ?? '').toLowerCase().includes(normalizedQuery);
+
+    return matchesCategory && matchesQuery;
+  });
+}
+
 function isRenderablePublicRow(row) {
   return Boolean(row.companyName && row.companyKey && row.referralLink);
 }

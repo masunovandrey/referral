@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildCompanyKey,
   buildPublicRowId,
+  filterPublicRows,
   groupPublicRowsByCompany,
   normalizePublicRows,
   pickRandomPublicRow
@@ -146,6 +147,34 @@ describe('pickRandomPublicRow', () => {
 
   it('returns null for an empty list', () => {
     expect(pickRandomPublicRow([], () => 0)).toBeNull();
+  });
+});
+
+describe('filterPublicRows', () => {
+  it('returns all rows when query and category are empty', () => {
+    const rows = [publicRow(), publicRow({ id: 'second', companyName: 'Beta' })];
+
+    expect(filterPublicRows(rows, {})).toHaveLength(2);
+  });
+
+  it('filters rows by company name', () => {
+    const rows = [publicRow(), publicRow({ id: 'second', companyName: 'Beta' })];
+
+    expect(filterPublicRows(rows, { query: 'acme' })).toHaveLength(1);
+    expect(filterPublicRows(rows, { query: 'ACME' })).toHaveLength(1);
+  });
+
+  it('filters rows by category', () => {
+    const rows = [publicRow(), publicRow({ id: 'second', category: 'food' })];
+
+    expect(filterPublicRows(rows, { category: 'fintech' })).toHaveLength(1);
+  });
+
+  it('combines query and category with and', () => {
+    const rows = [publicRow(), publicRow({ id: 'second', category: 'food' })];
+
+    expect(filterPublicRows(rows, { query: 'acme', category: 'fintech' })).toHaveLength(1);
+    expect(filterPublicRows(rows, { query: 'beta', category: 'fintech' })).toHaveLength(0);
   });
 });
 
