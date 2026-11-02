@@ -42,9 +42,9 @@ describe('renderPrivateRows', () => {
     expect(html).toContain('Clicks: 3');
     expect(html).toContain('Published');
     expect(html).toContain('data-role="row-view"');
-    expect(html).toContain('data-role="edit-row"');
-    expect(html).toContain('data-role="delete-row"');
-    expect(html).toContain('data-role="toggle-publish"');
+    expect(html).toContain('data-action="edit"');
+    expect(html).toContain('data-action="delete"');
+    expect(html).toContain('data-action="unpublish"');
     expect(html).toContain('data-role="cancel-edit"');
     expect(html).toContain('data-role="companyName-error"');
     expect(html).toContain('private-row-edit-form');

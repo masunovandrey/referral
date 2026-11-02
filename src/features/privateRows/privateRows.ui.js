@@ -45,9 +45,9 @@ export function renderPrivateRowCard(row) {
         </dl>
         <p class="row-meta">${formatRowMeta(row)}</p>
         <div class="private-row-actions">
-          <button class="action-button secondary-button" type="button" data-role="edit-row">${actions.editLabel}</button>
-          <button class="action-button secondary-button" type="button" data-role="toggle-publish">${row.isPublished ? actions.unpublishLabel : actions.publishLabel}</button>
-          <button class="action-button danger-button" type="button" data-role="delete-row">${actions.deleteLabel}</button>
+          <button class="action-button secondary-button" type="button" data-action="edit">${actions.editLabel}</button>
+          <button class="action-button secondary-button" type="button" data-action="${row.isPublished ? 'unpublish' : 'publish'}">${row.isPublished ? actions.unpublishLabel : actions.publishLabel}</button>
+          <button class="action-button danger-button" type="button" data-action="delete">${actions.deleteLabel}</button>
         </div>
       </div>
       <form class="private-row-edit-form profile-form" data-row-id="${escapeHtmlAttribute(row.id)}" hidden>

@@ -515,7 +515,7 @@ function getPrivateRowsContext(container) {
 function handlePrivateRowsClick(event) {
   const container = event.currentTarget;
   const context = getPrivateRowsContext(container);
-  const action = event.target.closest('[data-role]');
+  const action = event.target.closest('[data-action], [data-role]');
 
   if (!context || !action || !container.contains(action)) {
     return;
@@ -528,7 +528,8 @@ function handlePrivateRowsClick(event) {
     return;
   }
 
-  switch (action.dataset.role) {
+  switch (action.dataset.action || action.dataset.role) {
+    case 'edit':
     case 'edit-row':
       setRowEditMode(card, true);
       break;
@@ -541,9 +542,12 @@ function handlePrivateRowsClick(event) {
       setRowEditMode(card, false);
       break;
     }
+    case 'delete':
     case 'delete-row':
       void handleDeleteUserRow(container, context, card, row);
       break;
+    case 'unpublish':
+    case 'publish':
     case 'toggle-publish':
       void handleTogglePublish(context, card, row);
       break;
