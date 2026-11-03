@@ -301,7 +301,7 @@ function renderProfilePage(root, user) {
     const shouldOpen = collapsibleAddToggle.dataset.open !== 'true';
     collapsibleAddToggle.dataset.open = shouldOpen ? 'true' : '';
     collapsibleFormContainer.innerHTML = shouldOpen
-      ? renderCollapsibleForm({ isOpen: true })
+      ? renderCollapsibleForm({ isOpen: true, categories: referralCategories })
       : '';
   });
 

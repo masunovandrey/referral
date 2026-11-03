@@ -1,7 +1,13 @@
-export function renderCollapsibleForm({ isOpen = false, title = 'Add referral entry' } = {}) {
+import { referralCategories } from '../privateRows/privateRows.model.js';
+
+export function renderCollapsibleForm({ isOpen = false, title = 'Add referral entry', categories = referralCategories } = {}) {
   if (!isOpen) {
     return '';
   }
+
+  const categoryOptions = categories
+    .map((category) => `<option value="${category}">${category}</option>`)
+    .join('');
 
   return `
     <section class="collapsible-form">
@@ -15,6 +21,7 @@ export function renderCollapsibleForm({ isOpen = false, title = 'Add referral en
           <span>Category</span>
           <select name="category" required>
             <option value="" selected disabled>Select category</option>
+            ${categoryOptions}
           </select>
         </label>
         <label class="field">
