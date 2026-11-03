@@ -287,14 +287,6 @@ function renderProfilePage(root, user) {
     navigateTo(routes.home);
   });
 
-  const createForm = root.querySelector('#collapsible-form');
-  createForm?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    void handleCreateUserRow(root, viewModel, event.currentTarget);
-  });
-  createForm?.addEventListener('input', handlePrivateRowsInput);
-  createForm?.addEventListener('change', handlePrivateRowsInput);
-
   const collapsibleAddToggle = root.querySelector('#collapsible-add-toggle');
   const collapsibleFormContainer = root.querySelector('#collapsible-form-container');
   collapsibleAddToggle?.addEventListener('click', () => {
@@ -303,6 +295,18 @@ function renderProfilePage(root, user) {
     collapsibleFormContainer.innerHTML = shouldOpen
       ? renderCollapsibleForm({ isOpen: true, categories: referralCategories })
       : '';
+
+    if (!shouldOpen) {
+      return;
+    }
+
+    const createForm = collapsibleFormContainer.querySelector('#collapsible-form');
+    createForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      void handleCreateUserRow(root, viewModel, event.currentTarget);
+    });
+    createForm?.addEventListener('input', handlePrivateRowsInput);
+    createForm?.addEventListener('change', handlePrivateRowsInput);
   });
 
   void loadPrivateRows(root, viewModel);
