@@ -357,13 +357,14 @@ async function loadPublicCatalog(root) {
 
 function wireCompanyCopyButtons(container, groups) {
   const feedback = container.querySelector('#public-catalog-feedback');
-  const referralLinks = groups.flatMap((group) => group.links);
 
   for (const button of container.querySelectorAll('[data-company-key]')) {
     button.addEventListener('click', async () => {
-      const row = pickRandomPublicRow(referralLinks);
+      const companyKey = button.getAttribute('data-company-key');
+      const group = groups.find((candidate) => candidate.companyKey === companyKey);
+      const row = group ? pickRandomPublicRow(group.links) : null;
 
-      if (!row) {
+      if (!group || !row) {
         return;
       }
 
@@ -375,7 +376,7 @@ function wireCompanyCopyButtons(container, groups) {
         await navigator.clipboard.writeText(row.referralLink);
 
         if (feedback) {
-          feedback.textContent = `Copied referral link for ${row.companyName}.`;
+          feedback.textContent = `Copied referral link for ${group.companyName}.`;
         }
 
         try {
@@ -385,7 +386,7 @@ function wireCompanyCopyButtons(container, groups) {
         }
       } catch (error) {
         if (feedback) {
-          feedback.textContent = `Could not copy the referral link for ${row.companyName}.`;
+          feedback.textContent = `Could not copy the referral link for ${group.companyName}.`;
         }
       }
     });
