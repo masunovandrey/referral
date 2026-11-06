@@ -2,6 +2,7 @@ const dictionaries = {
   en: {
     'home.hero.title': 'Referral links in one click',
     'home.hero.subtitle': 'Choose a company — the link will be copied automatically',
+    'home.hero.cta': 'Browse catalog',
     'home.catalog.search.placeholder': 'Search by company or category',
     'home.catalog.chips.all': 'All',
     'home.catalog.copySuccess': 'Referral link is copied',

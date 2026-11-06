@@ -2,10 +2,6 @@ import { renderHeader } from '../ui/header.js';
 import { renderHero, renderSearchInput, renderCategoryChips, renderCompanyCards } from './homeCatalog.js';
 
 export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups: [], categories: [], selectedCategory: '', query: '' }, loginOpen = false) {
-  const lede = viewModel.isAuthenticated
-    ? `Signed in as ${escapeHtml(viewModel.identityLabel)}.`
-    : 'Anyone can view this page. Sign in to access your personal profile.';
-
   const header = renderHeader({
     isAuthenticated: viewModel.isAuthenticated,
     isEmailVerified: viewModel.isEmailVerified
@@ -23,11 +19,10 @@ export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups
         <div class="panel-header">
           <div>
             <p class="eyebrow">Referral</p>
-            <h1>Public Home</h1>
           </div>
           ${viewModel.showLogout ? '<button id="logout-button" class="action-button" type="button">Log out</button>' : ''}
         </div>
-        <p class="lede">${lede}</p>
+        ${viewModel.isAuthenticated ? `<p class="lede">Signed in as ${escapeHtml(viewModel.identityLabel)}.</p>` : ''}
         ${viewModel.showVerificationBanner ? renderVerificationBanner(viewModel.identityLabel) : ''}
         ${viewModel.showProfileButton ? `
           <div class="action-row">

@@ -187,6 +187,10 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
     });
   }
 
+    root.querySelector('[data-hero-cta]')?.addEventListener('click', () => {
+      document.getElementById('public-catalog-container')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
     const catalogSearchInput = root.querySelector('.catalog-search__input');
     catalogSearchInput?.addEventListener('input', () => {
       catalogQuery = catalogSearchInput.value ?? '';
