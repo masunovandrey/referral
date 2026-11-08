@@ -31,6 +31,17 @@ describe('renderHomeView', () => {
     expect(renderHomeView(viewModel, emailAuthViewModel, catalog, true)).toContain('id="email-auth-form"');
   });
 
+  it('renders the login modal when login is open', () => {
+    const html = renderHomeView(
+      buildHomeViewModel(null),
+      buildEmailAuthViewModel('login'),
+      { groups: [], categories: [], selectedCategory: '', query: '' },
+      true
+    );
+
+    expect(html).toContain('data-role="login-modal-overlay"');
+  });
+
   it('hides the auth form and shows identity for verified users', () => {
     const html = renderHomeView(
       buildHomeViewModel({ uid: 'user-a', email: 'user@example.com', emailVerified: true }),

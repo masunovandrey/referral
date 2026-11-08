@@ -112,12 +112,24 @@ export function initApp(root) {
       catalogQuery = '';
       catalogCategory = '';
       catalogCategories = [];
+    } else {
+      loginOpen = false;
     }
 
     render();
   });
 
+  const handleLoginModalEscape = (event) => {
+    if (event.key === 'Escape' && loginOpen) {
+      renderHomePage(root, currentUser, emailAuthMode, (nextMode) => {
+        emailAuthMode = nextMode;
+        render();
+      }, refreshUser, false);
+    }
+  };
+
   window.addEventListener('hashchange', render);
+  window.addEventListener('keydown', handleLoginModalEscape);
   render();
 }
 
@@ -168,6 +180,17 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
 
     root.querySelector('[data-role="open-login"]')?.addEventListener('click', () => {
       renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, !loginOpen);
+    });
+
+    root.querySelector('[data-role="login-modal-close"]')?.addEventListener('click', () => {
+      renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, false);
+    });
+
+    const loginModalOverlay = root.querySelector('[data-role="login-modal-overlay"]');
+    loginModalOverlay?.addEventListener('click', (event) => {
+      if (event.target === loginModalOverlay) {
+        renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, false);
+      }
     });
 
     root.querySelector('#google-sign-in-button')?.addEventListener('click', async () => {

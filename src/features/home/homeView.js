@@ -1,4 +1,5 @@
 import { renderHeader } from '../ui/header.js';
+import { renderLoginModal } from '../ui/loginModal.js';
 import { renderHero, renderSearchInput, renderCategoryChips, renderCompanyCards } from './homeCatalog.js';
 
 export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups: [], categories: [], selectedCategory: '', query: '' }, loginOpen = false) {
@@ -35,7 +36,7 @@ export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups
         <div id="public-catalog-container" class="placeholder">
           ${catalogContent}
         </div>
-        ${viewModel.showAuthSection && loginOpen ? renderAuthSection(emailAuthViewModel) : ''}
+        ${viewModel.showAuthSection && loginOpen ? renderLoginModal(emailAuthViewModel) : ''}
       </section>
     </main>
   `;
@@ -51,38 +52,6 @@ function renderVerificationBanner(emailLabel) {
             <button id="refresh-verification-button" class="action-button secondary-button" type="button">I confirmed my email</button>
           </div>
           <p id="verification-feedback" class="form-feedback" aria-live="polite"></p>
-        </section>
-  `;
-}
-
-function renderAuthSection(emailAuthViewModel) {
-  return `
-        <section class="auth-section">
-          <div class="auth-section-header">
-            <h2>${escapeHtml(emailAuthViewModel.title)}</h2>
-            <button id="toggle-email-auth-mode" class="text-button" type="button">${escapeHtml(emailAuthViewModel.toggleLabel)}</button>
-          </div>
-          <form id="email-auth-form" class="profile-form">
-            ${emailAuthViewModel.showNameField ? `
-              <label class="field">
-                <span>Name</span>
-                <input name="name" type="text" autocomplete="name" />
-              </label>
-            ` : ''}
-            <label class="field">
-              <span>Email</span>
-              <input name="email" type="email" autocomplete="email" />
-            </label>
-            <label class="field">
-              <span>Password</span>
-              <input name="password" type="password" autocomplete="${emailAuthViewModel.mode === 'signup' ? 'new-password' : 'current-password'}" />
-            </label>
-            <button class="action-button" type="submit">${escapeHtml(emailAuthViewModel.submitLabel)}</button>
-          </form>
-          ${emailAuthViewModel.mode === 'login' ? '<button id="reset-password-button" class="text-button" type="button">Reset password</button>' : ''}
-          <p id="email-auth-feedback" class="form-feedback" aria-live="polite"></p>
-          <div class="auth-divider"><span>or</span></div>
-          <button id="google-sign-in-button" class="action-button secondary-button" type="button">Continue with Google</button>
         </section>
   `;
 }
