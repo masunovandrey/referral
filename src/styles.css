@@ -129,7 +129,7 @@ select {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  width: min(100%, var(--container-max));
+  width: min(100%, 560px);
 }
 
 .app-header__left {
