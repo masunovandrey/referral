@@ -79,12 +79,18 @@ export function initApp(root) {
           render();
         },
         refreshUser,
-        loginOpen
+        loginOpen,
+        setLoginOpen
       );
       return;
     }
 
     renderProfilePage(root, currentUser);
+  };
+
+  const setLoginOpen = (nextOpen) => {
+    loginOpen = nextOpen;
+    render();
   };
 
   const refreshUser = async () => {
@@ -121,10 +127,7 @@ export function initApp(root) {
 
   const handleLoginModalEscape = (event) => {
     if (event.key === 'Escape' && loginOpen) {
-      renderHomePage(root, currentUser, emailAuthMode, (nextMode) => {
-        emailAuthMode = nextMode;
-        render();
-      }, refreshUser, false);
+      setLoginOpen(false);
     }
   };
 
@@ -133,7 +136,7 @@ export function initApp(root) {
   render();
 }
 
-function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, loginOpen) {
+function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, loginOpen, setLoginOpen) {
   const viewModel = buildHomeViewModel(user);
   const emailAuthViewModel = buildEmailAuthViewModel(emailAuthMode);
 
@@ -179,17 +182,17 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
     });
 
     root.querySelector('[data-role="open-login"]')?.addEventListener('click', () => {
-      renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, !loginOpen);
+      setLoginOpen(!loginOpen);
     });
 
     root.querySelector('[data-role="login-modal-close"]')?.addEventListener('click', () => {
-      renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, false);
+      setLoginOpen(false);
     });
 
     const loginModalOverlay = root.querySelector('[data-role="login-modal-overlay"]');
     loginModalOverlay?.addEventListener('click', (event) => {
       if (event.target === loginModalOverlay) {
-        renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, false);
+        setLoginOpen(false);
       }
     });
 
