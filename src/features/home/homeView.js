@@ -18,9 +18,7 @@ export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups
       ${header}
       <section class="panel auth-panel">
         <div class="panel-header">
-          <div>
-            <p class="eyebrow">Referral</p>
-          </div>
+          <div></div>
           ${viewModel.showLogout ? '<button id="logout-button" class="action-button" type="button">Log out</button>' : ''}
         </div>
         ${viewModel.isAuthenticated ? `<p class="lede">Signed in as ${escapeHtml(viewModel.identityLabel)}.</p>` : ''}
