@@ -133,13 +133,13 @@ select {
 }
 
 .app-header__left {
-  flex: 1;
+  flex: 0 0 auto;
 }
 
 .app-header__center {
   flex: 1;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .app-header__logo {
