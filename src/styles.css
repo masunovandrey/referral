@@ -496,7 +496,7 @@ h1 {
   min-height: 240px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 480px) {
   .public-row-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
