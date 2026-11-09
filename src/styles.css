@@ -515,6 +515,7 @@ h1 {
 }
 
 .public-row-card {
+  aspect-ratio: 1 / 1;
   border: 1px solid rgba(31, 41, 51, 0.12);
   border-radius: 8px;
   background: rgba(249, 244, 235, 0.7);
