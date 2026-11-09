@@ -9,7 +9,6 @@ describe('i18n', () => {
   it('returns english strings for known keys', () => {
     expect(translate('home.hero.title')).toBe('Referral links in one click');
     expect(translate('home.catalog.copySuccess')).toBe('Referral link is copied');
-    expect(translate('home.hero.cta')).toBe('Browse catalog');
   });
 
   it('returns the key itself for unknown keys', () => {

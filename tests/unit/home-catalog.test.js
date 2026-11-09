@@ -2,14 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { renderCatalogEmptyState, renderCategoryChips, renderCompanyCards, renderHero, renderSearchInput } from '../../src/features/home/homeCatalog.js';
 
 describe('homeCatalog', () => {
-  it('renders the hero with title, subtitle and cta', () => {
+  it('renders the hero with title and subtitle', () => {
     const html = renderHero();
 
     expect(html).toContain('hero__title');
     expect(html).toContain('hero__subtitle');
     expect(html).toContain('Referral links in one click');
-    expect(html).toContain('Browse catalog');
-    expect(html).toContain('data-hero-cta');
   });
 
   it('renders the search input with value and placeholder', () => {

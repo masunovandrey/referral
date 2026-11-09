@@ -6,7 +6,6 @@ export function renderHero() {
     <section class="hero">
       <h1 class="hero__title">${translate('home.hero.title')}</h1>
       <p class="hero__subtitle">${translate('home.hero.subtitle')}</p>
-      <button class="btn" type="button" data-hero-cta>${translate('home.hero.cta')}</button>
     </section>
   `;
 }
