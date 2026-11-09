@@ -490,27 +490,16 @@ h1 {
 }
 
 .public-row-list {
+  container-type: inline-size;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   min-height: 240px;
 }
 
-@media (min-width: 768px) {
+@container (min-width: 400px) {
   .public-row-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .public-row-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1280px) {
-  .public-row-list {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
