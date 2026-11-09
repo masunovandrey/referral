@@ -10,6 +10,7 @@ import {
   signUpWithEmail
 } from './firebase/auth.js';
 import { buildEmailAuthViewModel } from './features/auth/emailAuthViewModel.js';
+import { renderLoginModal } from './features/ui/loginModal.js';
 import { buildHomeViewModel } from './features/home/homeViewModel.js';
 import { renderHomeView } from './features/home/homeView.js';
 import {
@@ -136,6 +137,60 @@ export function initApp(root) {
   render();
 }
 
+function refreshLoginModal(root, mode, closeModal) {
+  const authPanel = root.querySelector('.auth-panel');
+  if (!authPanel) {
+    return;
+  }
+
+  authPanel.querySelector('[data-role="login-modal-overlay"]')?.remove();
+  authPanel.insertAdjacentHTML('beforeend', renderLoginModal(buildEmailAuthViewModel(mode)));
+
+  const modalOverlay = authPanel.querySelector('[data-role="login-modal-overlay"]');
+  modalOverlay?.addEventListener('click', (event) => {
+    if (event.target === modalOverlay) {
+      closeModal();
+    }
+  });
+
+  root.querySelector('[data-role="login-modal-close"]')?.addEventListener('click', () => {
+    closeModal();
+  });
+
+  root.querySelector('#toggle-email-auth-mode')?.addEventListener('click', () => {
+    const nextMode = mode === 'login' ? 'signup' : 'login';
+    refreshLoginModal(root, nextMode, closeModal);
+  });
+
+  root.querySelector('#email-auth-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    void handleEmailAuth(root, mode, event.currentTarget);
+  });
+
+  root.querySelector('#reset-password-button')?.addEventListener('click', () => {
+    const form = root.querySelector('#email-auth-form');
+    if (!(form instanceof HTMLFormElement)) {
+      return;
+    }
+    void handlePasswordReset(root, form);
+  });
+
+  root.querySelector('#google-sign-in-button')?.addEventListener('click', async () => {
+    const feedback = root.querySelector('#email-auth-feedback');
+    if (feedback) {
+      feedback.textContent = 'Signing in with Google...';
+    }
+    try {
+      await signInWithGoogle();
+      navigateTo(routes.profile);
+    } catch (error) {
+      if (feedback) {
+        feedback.textContent = getAuthErrorMessage(error);
+      }
+    }
+  });
+}
+
 function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser, loginOpen, setLoginOpen) {
   const viewModel = buildHomeViewModel(user);
   const emailAuthViewModel = buildEmailAuthViewModel(emailAuthMode);
@@ -164,7 +219,11 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
     }
   } else {
     root.querySelector('#toggle-email-auth-mode')?.addEventListener('click', () => {
-      setEmailAuthMode(emailAuthViewModel.mode === 'login' ? 'signup' : 'login');
+      const nextMode = emailAuthMode === 'login' ? 'signup' : 'login';
+      if (!loginOpen) {
+        return;
+      }
+      refreshLoginModal(root, nextMode, setLoginOpen);
     });
 
     root.querySelector('#email-auth-form')?.addEventListener('submit', (event) => {
