@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderCatalogEmptyState, renderCategoryMenu, renderCompanyCards, renderHero, renderSearchInput } from '../../src/features/home/homeCatalog.js';
+import { renderCatalogEmptyState, renderCategoryMenu, renderCategoryMenuItems, renderCompanyCards, renderHero, renderSearchInput } from '../../src/features/home/homeCatalog.js';
 
 describe('homeCatalog', () => {
   it('renders the hero with title and subtitle', () => {
@@ -35,6 +35,15 @@ describe('homeCatalog', () => {
     expect(html).toContain('data-category="food"');
     expect(html).toContain('chip--active');
     expect(html).toContain('fintech');
+  });
+
+  it('renders category menu items with the all item first', () => {
+    const items = renderCategoryMenuItems({ categories: ['fintech', 'food'], selectedCategory: 'fintech' });
+
+    expect(items).toContain('data-category=""');
+    expect(items).toContain('data-category="fintech"');
+    expect(items).toContain('data-category="food"');
+    expect(items).toContain('chip--active');
   });
 
   it('renders company cards from groups', () => {

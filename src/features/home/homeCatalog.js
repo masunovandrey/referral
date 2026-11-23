@@ -22,15 +22,13 @@ export function renderSearchInput({ value = '' } = {}) {
   `;
 }
 
-export function renderCategoryMenu({ categories = [], selectedCategory = '' } = {}) {
-  const selectedLabel = selectedCategory || translate('home.catalog.chips.all');
-
+export function renderCategoryMenuItems({ categories = [], selectedCategory = '' } = {}) {
   const items = [
     { value: '', label: translate('home.catalog.chips.all') },
     ...categories.map((category) => ({ value: category, label: category }))
   ];
 
-  const itemsHtml = items
+  return items
     .map(
       (item) => `
         <button
@@ -43,6 +41,10 @@ export function renderCategoryMenu({ categories = [], selectedCategory = '' } = 
       `
     )
     .join('');
+}
+
+export function renderCategoryMenu({ categories = [], selectedCategory = '' } = {}) {
+  const selectedLabel = selectedCategory || translate('home.catalog.chips.all');
 
   return `
     <div class="catalog-menu">
@@ -57,7 +59,7 @@ export function renderCategoryMenu({ categories = [], selectedCategory = '' } = 
         <span class="catalog-menu__value">${selectedLabel}</span>
       </button>
       <div class="catalog-menu__dropdown" data-role="category-menu" hidden>
-        ${itemsHtml}
+        ${renderCategoryMenuItems({ categories, selectedCategory })}
       </div>
     </div>
   `;

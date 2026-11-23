@@ -13,6 +13,8 @@ import { buildEmailAuthViewModel } from './features/auth/emailAuthViewModel.js';
 import { renderLoginModal } from './features/ui/loginModal.js';
 import { buildHomeViewModel } from './features/home/homeViewModel.js';
 import { renderHomeView } from './features/home/homeView.js';
+import { renderCategoryMenuItems } from './features/home/homeCatalog.js';
+import { translate } from './features/i18n/i18n.js';
 import {
   createUserRow,
   deleteUserRow,
@@ -444,6 +446,20 @@ async function loadPublicCatalog(root) {
     const filteredRows = filterPublicRows(rows, { query: catalogQuery, category: catalogCategory });
     const groups = groupPublicRowsByCompany(filteredRows);
     catalogCategories = [...new Set(groups.flatMap((group) => group.categories))].sort();
+
+    const categoryMenu = root.querySelector('.catalog-menu');
+    if (categoryMenu) {
+      categoryMenu.querySelector('[data-role="category-menu"]').innerHTML = renderCategoryMenuItems({
+        categories: catalogCategories,
+        selectedCategory: catalogCategory
+      });
+    }
+
+    const categoryMenuToggle = root.querySelector('[data-role="category-menu-toggle"]');
+    const categoryMenuValue = categoryMenuToggle?.querySelector('.catalog-menu__value');
+    if (categoryMenuValue) {
+      categoryMenuValue.textContent = catalogCategory || translate('home.catalog.chips.all');
+    }
 
     container.classList.remove('placeholder');
     container.innerHTML = renderPublicRows(groups);
