@@ -9,6 +9,17 @@ const dictionaries = {
     'home.catalog.empty.notFound': 'Nothing found',
     'profile.add.title': 'Add referral entry',
     'profile.add.submit': 'Add referral entry'
+  },
+  ru: {
+    'home.hero.title': 'Реферальные ссылки в один клик',
+    'home.hero.subtitle': 'Выберите компанию — ссылка будет скопирована автоматически',
+    'home.catalog.search.placeholder': 'Поиск по названию или категории',
+    'home.catalog.chips.all': 'Все',
+    'home.catalog.copySuccess': 'Реферальная ссылка скопирована',
+    'home.catalog.empty.all': 'Пока нет реферальных ссылок',
+    'home.catalog.empty.notFound': 'Ничего не найдено',
+    'profile.add.title': 'Добавить реферальную запись',
+    'profile.add.submit': 'Добавить реферальную запись'
   }
 };
 

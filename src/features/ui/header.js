@@ -15,7 +15,13 @@ export function renderHeader({ isAuthenticated = false, isEmailVerified = false 
         <a class="app-header__logo" href="#/">Referral</a>
       </div>
       <div class="app-header__right">
-        <button class="app-header__action" type="button" data-role="language-toggle">${languageLabel}</button>
+        <div class="app-header__language">
+          <button class="app-header__action" type="button" data-role="language-toggle" aria-haspopup="menu" aria-expanded="false">${languageLabel}</button>
+          <div class="app-header__language-menu" data-role="language-menu" hidden>
+            <button type="button" class="language-menu__item" data-language="en">EN</button>
+            <button type="button" class="language-menu__item" data-language="ru">RU</button>
+          </div>
+        </div>
         <button class="app-header__action" type="button" data-role="${actionRole}">${actionLabel}</button>
       </div>
     </header>

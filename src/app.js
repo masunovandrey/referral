@@ -14,7 +14,7 @@ import { renderLoginModal } from './features/ui/loginModal.js';
 import { buildHomeViewModel } from './features/home/homeViewModel.js';
 import { renderHomeView } from './features/home/homeView.js';
 import { renderCategoryMenuItems } from './features/home/homeCatalog.js';
-import { translate } from './features/i18n/i18n.js';
+import { setLanguage, translate } from './features/i18n/i18n.js';
 import {
   createUserRow,
   deleteUserRow,
@@ -133,6 +133,36 @@ export function initApp(root) {
       setLoginOpen(false);
     }
   };
+
+  root.addEventListener('click', (event) => {
+    const languageToggle = event.target.closest('[data-role="language-toggle"]');
+    const languageItem = event.target.closest('[data-language]');
+
+    if (languageToggle) {
+      const languageMenu = root.querySelector('[data-role="language-menu"]');
+      const isOpen = Boolean(languageMenu) && !languageMenu.hidden;
+
+      if (languageMenu) {
+        languageMenu.hidden = isOpen;
+      }
+
+      languageToggle.setAttribute('aria-expanded', String(!isOpen));
+      return;
+    }
+
+    if (languageItem) {
+      setLanguage(languageItem.dataset.language ?? 'en');
+
+      const languageMenu = root.querySelector('[data-role="language-menu"]');
+      if (languageMenu) {
+        languageMenu.hidden = true;
+      }
+
+      event.target.closest('[data-role="language-toggle"]')?.setAttribute('aria-expanded', 'false');
+
+      render();
+    }
+  });
 
   window.addEventListener('hashchange', render);
   window.addEventListener('keydown', handleLoginModalEscape);

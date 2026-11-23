@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderHeader } from '../../src/features/ui/header.js';
+import { setLanguage } from '../../src/features/i18n/i18n.js';
 
 describe('header', () => {
   it('renders the logo link to home', () => {
@@ -21,6 +22,16 @@ describe('header', () => {
 
     expect(html).toContain('data-role="open-profile"');
     expect(html).toContain('>Profile<');
+  });
+
+  it('renders the language menu with english and russian options', () => {
+    setLanguage('en');
+
+    const html = renderHeader({ isAuthenticated: false });
+
+    expect(html).toContain('data-role="language-menu"');
+    expect(html).toContain('data-language="en"');
+    expect(html).toContain('data-language="ru"');
   });
 
   it('shows login action when an authenticated user is not verified', () => {

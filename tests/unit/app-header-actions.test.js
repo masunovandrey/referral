@@ -119,4 +119,28 @@ describe('app header actions', () => {
 
     root.remove();
   });
+
+  it('switches the language through the header dropdown', () => {
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+
+    initApp(root);
+
+    const toggle = root.querySelector('[data-role="language-toggle"]');
+    const menu = root.querySelector('[data-role="language-menu"]');
+    expect(toggle).not.toBeNull();
+    expect(menu).not.toBeNull();
+    expect(menu.hidden).toBe(true);
+
+    toggle.click();
+    expect(menu.hidden).toBe(false);
+
+    root.querySelector('[data-language="ru"]').click();
+
+    const updatedToggle = root.querySelector('[data-role="language-toggle"]');
+    expect(updatedToggle.textContent).toBe('RU');
+    expect(updatedToggle.getAttribute('aria-expanded')).toBe('false');
+
+    root.remove();
+  });
 });

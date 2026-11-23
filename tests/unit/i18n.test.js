@@ -11,6 +11,14 @@ describe('i18n', () => {
     expect(translate('home.catalog.copySuccess')).toBe('Referral link is copied');
   });
 
+  it('returns russian strings for known keys', () => {
+    setLanguage('ru');
+
+    expect(getLanguage()).toBe('ru');
+    expect(translate('home.hero.title')).toBe('Реферальные ссылки в один клик');
+    expect(translate('home.catalog.chips.all')).toBe('Все');
+  });
+
   it('returns the key itself for unknown keys', () => {
     expect(translate('missing.key')).toBe('missing.key');
   });
