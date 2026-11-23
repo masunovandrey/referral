@@ -53,7 +53,7 @@ describe('renderHomeView', () => {
     expect(html).not.toContain('id="reset-password-button"');
     expect(html).toContain('Signed in as user@example.com');
     expect(html).toContain('id="logout-button"');
-    expect(html).toContain('id="open-profile-button"');
+    expect(html).not.toContain('id="open-profile-button"');
     expect(html).toContain('id="public-catalog-container"');
     expect(html).not.toContain('id="resend-verification-button"');
   });

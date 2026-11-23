@@ -23,11 +23,6 @@ export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups
         </div>
         ${viewModel.isAuthenticated ? `<p class="lede">Signed in as ${escapeHtml(viewModel.identityLabel)}.</p>` : ''}
         ${viewModel.showVerificationBanner ? renderVerificationBanner(viewModel.identityLabel) : ''}
-        ${viewModel.showProfileButton ? `
-          <div class="action-row">
-            <button id="open-profile-button" class="action-button" type="button">View your profile</button>
-          </div>
-        ` : ''}
         ${hero}
         <div class="catalog-toolbar">
           ${categoryMenu}
