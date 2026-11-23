@@ -1,4 +1,4 @@
-import { getFallbackLogoColor, getFallbackLogoLetter } from '../ui/fallbackLogo.js';
+import { getFallbackLogoColor, getFallbackLogoIcon, getFallbackLogoLetter } from '../ui/fallbackLogo.js';
 import { translate } from '../i18n/i18n.js';
 
 export function renderHero() {
@@ -74,7 +74,7 @@ export function renderCompanyCards({ groups = [] } = {}) {
     (group) => `
       <article class="public-row-card">
         <h3>
-          <span class="fallback-logo" style="background-color: ${getFallbackLogoColor(group.companyName)}">${getFallbackLogoLetter(group.companyName)}</span>
+          <span class="fallback-logo" style="background-color: ${getFallbackLogoColor(group.companyName)}">${getFallbackLogoIcon(group)}</span>
           ${group.companyName}
         </h3>
         <p>${group.categories.join(', ')} · ${group.linkCount} referral links</p>

@@ -1,4 +1,4 @@
-import { getFallbackLogoColor, getFallbackLogoLetter } from '../ui/fallbackLogo.js';
+import { getFallbackLogoColor, getFallbackLogoIcon, getFallbackLogoLetter } from '../ui/fallbackLogo.js';
 
 export function renderPublicRows(groups) {
   if (groups.length === 0) {
@@ -20,7 +20,7 @@ export function renderPublicRows(groups) {
             (group) => `
               <article class="public-row-card">
                 <h3>
-                  <span class="fallback-logo" style="background-color: ${getFallbackLogoColor(group.companyName)}">${getFallbackLogoLetter(group.companyName)}</span>
+                  <span class="fallback-logo" style="background-color: ${getFallbackLogoColor(group.companyName)}">${getFallbackLogoIcon(group)}</span>
                   <button class="company-copy-button" type="button" data-company-key="${escapeHtmlAttribute(group.companyKey)}">
                     ${escapeHtml(group.companyName)}
                   </button>

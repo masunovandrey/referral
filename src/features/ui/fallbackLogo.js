@@ -11,6 +11,18 @@ export function getFallbackLogoColor(companyName) {
   return FALLBACK_LOGO_COLORS[hash % FALLBACK_LOGO_COLORS.length];
 }
 
+export function getFallbackLogoIcon({ companyName, categories = [] } = {}) {
+  const hasTravelCategory = (categories ?? []).some(
+    (category) => String(category ?? '').trim().toLowerCase() === 'travel'
+  );
+
+  if (hasTravelCategory) {
+    return '🌴';
+  }
+
+  return getFallbackLogoLetter(companyName);
+}
+
 export function getFallbackLogoLetter(companyName) {
   const normalized = String(companyName ?? '').trim();
 

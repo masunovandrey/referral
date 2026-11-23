@@ -46,6 +46,21 @@ describe('homeCatalog', () => {
     expect(items).toContain('chip--active');
   });
 
+  it('renders a palm icon for travel category cards', () => {
+    const html = renderCompanyCards({
+      groups: [
+        {
+          companyKey: 'palma',
+          companyName: 'Palma',
+          categories: ['travel'],
+          linkCount: 1
+        }
+      ]
+    });
+
+    expect(html).toContain('\u{1F334}');
+  });
+
   it('renders company cards from groups', () => {
     const html = renderCompanyCards({
       groups: [
