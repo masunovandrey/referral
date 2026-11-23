@@ -17,7 +17,7 @@ export function getFallbackLogoIcon({ companyName, categories = [] } = {}) {
   );
 
   if (hasCategory('travel')) {
-    return '<svg class="fallback-logo__icon" viewBox="0 0 24 24" width="18" height="18" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 21v-9" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M12 16c-3-2.5-6.5-4.5-9-6.5 2.5 3 6 5.5 9 7.5" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M12 16c3-2.5 6.5-4.5 9-6.5-2.5 3-6 5.5-9 7.5" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>';
+    return '<svg class="fallback-logo__icon" viewBox="0 0 24 24" width="18" height="18" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 21c0-6 0-10-1-13.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M12 16c-4-2.5-8-5-11-8 3 3.5 6.5 6 10 8.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M12 16c4-2.5 8-5 11-8-3 3.5-6.5 6-10 8.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M12 12.5c2.8-2 5.5-3.5 7.5-5.5-1.5 2.6-4 4.8-7.5 6.3" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>';
   }
 
   if (hasCategory('food')) {
