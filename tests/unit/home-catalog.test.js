@@ -46,7 +46,7 @@ describe('homeCatalog', () => {
     expect(items).toContain('chip--active');
   });
 
-  it('renders a white palm icon svg for travel category cards', () => {
+  it('renders the travel image icon for travel category cards', () => {
     const html = renderCompanyCards({
       groups: [
         {
@@ -58,8 +58,22 @@ describe('homeCatalog', () => {
       ]
     });
 
-    expect(html).toContain('M12 21');
-    expect(html).toContain('fill="#ffffff"');
+    expect(html).toContain('palm.png');
+  });
+
+  it('renders the food image icon for food category cards', () => {
+    const html = renderCompanyCards({
+      groups: [
+        {
+          companyKey: 'burger',
+          companyName: 'Burger Co',
+          categories: ['food'],
+          linkCount: 1
+        }
+      ]
+    });
+
+    expect(html).toContain('burger.png');
   });
 
   it('renders company cards from groups', () => {

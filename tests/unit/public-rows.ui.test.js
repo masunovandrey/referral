@@ -21,7 +21,7 @@ describe('renderPublicRows', () => {
 
     expect(html).toContain('Acme');
     expect(html).toContain('fallback-logo');
-    expect(html).toContain('M12 21');
+    expect(html).toContain('palm.png');
     expect(html).toContain('fintech, travel');
     expect(html).toContain('2 referral links');
     expect(html).toContain('data-company-key="acme"');

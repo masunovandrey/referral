@@ -10,12 +10,20 @@ describe('fallbackLogo', () => {
     expect(getFallbackLogoLetter('acme')).toBe('A');
   });
 
-  it('returns a white palm icon svg for the travel category', () => {
-    expect(getFallbackLogoIcon({ companyName: 'Palma Tours', categories: ['travel'] })).toContain('fill="#ffffff"');
+  it('returns the travel image icon', () => {
+    expect(getFallbackLogoIcon({ companyName: 'Palma Tours', categories: ['travel'] })).toContain('palm.png');
   });
 
-  it('returns a white hotdog icon svg for the food category', () => {
-    expect(getFallbackLogoIcon({ companyName: 'Hotdog', categories: ['food'] })).toContain('fill="#ffffff"');
+  it('returns the health image icon', () => {
+    expect(getFallbackLogoIcon({ companyName: 'Health Co', categories: ['health'] })).toContain('health.png');
+  });
+
+  it('returns the insurance image icon', () => {
+    expect(getFallbackLogoIcon({ companyName: 'Insure Co', categories: ['insurance'] })).toContain('insurance.png');
+  });
+
+  it('returns the food image icon', () => {
+    expect(getFallbackLogoIcon({ companyName: 'Burger Co', categories: ['food'] })).toContain('burger.png');
   });
 
   it('returns the company initial for other categories', () => {
