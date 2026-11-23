@@ -496,6 +496,7 @@ function wireCompanyCopyButtons(container, groups) {
         }
 
         await navigator.clipboard.writeText(row.referralLink);
+        playCoinSound();
 
         if (feedback) {
           feedback.textContent = `Copied referral link for ${group.companyName}.`;
@@ -512,6 +513,31 @@ function wireCompanyCopyButtons(container, groups) {
         }
       }
     });
+  }
+}
+
+function playCoinSound() {
+  try {
+    const AudioContextConstructor = window.AudioContext ?? window.webkitAudioContext;
+    if (!AudioContextConstructor) {
+      return;
+    }
+
+    const audioContext = new AudioContextConstructor();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(988, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(1318.51, audioContext.currentTime + 0.12);
+    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + 0.015);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.3);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.32);
+  } catch (error) {
   }
 }
 
