@@ -518,7 +518,7 @@ function wireCompanyCopyButtons(container, groups) {
 
 function playCoinSound() {
   try {
-    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/coin.wav`);
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/mario-coin.wav`);
     audio.currentTime = 0;
     void audio.play().catch(() => {});
   } catch (error) {
