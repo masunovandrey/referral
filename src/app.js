@@ -518,25 +518,9 @@ function wireCompanyCopyButtons(container, groups) {
 
 function playCoinSound() {
   try {
-    const AudioContextConstructor = window.AudioContext ?? window.webkitAudioContext;
-    if (!AudioContextConstructor) {
-      return;
-    }
-
-    const audioContext = new AudioContextConstructor();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    oscillator.type = 'triangle';
-    oscillator.frequency.setValueAtTime(1600, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(900, audioContext.currentTime + 0.08);
-    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.35, audioContext.currentTime + 0.005);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.18);
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.2);
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/coin.wav`);
+    audio.currentTime = 0;
+    void audio.play().catch(() => {});
   } catch (error) {
   }
 }
