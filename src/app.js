@@ -529,14 +529,14 @@ function playCoinSound() {
 
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(988, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(1318.51, audioContext.currentTime + 0.12);
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(1600, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(900, audioContext.currentTime + 0.08);
     gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + 0.015);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.3);
+    gainNode.gain.exponentialRampToValueAtTime(0.35, audioContext.currentTime + 0.005);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.18);
     oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.32);
+    oscillator.stop(audioContext.currentTime + 0.2);
   } catch (error) {
   }
 }
