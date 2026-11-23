@@ -46,7 +46,7 @@ describe('homeCatalog', () => {
     expect(items).toContain('chip--active');
   });
 
-  it('renders a palm icon for travel category cards', () => {
+  it('renders a white palm icon svg for travel category cards', () => {
     const html = renderCompanyCards({
       groups: [
         {
@@ -58,7 +58,8 @@ describe('homeCatalog', () => {
       ]
     });
 
-    expect(html).toContain('\u{1F334}');
+    expect(html).toContain('M12 21');
+    expect(html).toContain('fill="#ffffff"');
   });
 
   it('renders company cards from groups', () => {

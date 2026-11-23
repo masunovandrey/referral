@@ -10,11 +10,15 @@ describe('fallbackLogo', () => {
     expect(getFallbackLogoLetter('acme')).toBe('A');
   });
 
-  it('returns a palm icon for the travel category', () => {
-    expect(getFallbackLogoIcon({ companyName: 'Palma Tours', categories: ['travel'] })).toBe('\u{1F334}');
+  it('returns a white palm icon svg for the travel category', () => {
+    expect(getFallbackLogoIcon({ companyName: 'Palma Tours', categories: ['travel'] })).toContain('fill="#ffffff"');
   });
 
-  it('returns the company initial for non travel categories', () => {
+  it('returns a white hotdog icon svg for the food category', () => {
+    expect(getFallbackLogoIcon({ companyName: 'Hotdog', categories: ['food'] })).toContain('fill="#ffffff"');
+  });
+
+  it('returns the company initial for other categories', () => {
     expect(getFallbackLogoIcon({ companyName: 'Acme', categories: ['fintech'] })).toBe('A');
   });
 
