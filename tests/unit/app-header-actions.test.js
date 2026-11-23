@@ -48,4 +48,45 @@ describe('app header actions', () => {
 
     root.remove();
   });
+
+  it('opens the category menu when the burger toggle is clicked', () => {
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+
+    initApp(root);
+
+    const toggle = root.querySelector('[data-role="category-menu-toggle"]');
+    const dropdown = root.querySelector('[data-role="category-menu"]');
+    expect(toggle).not.toBeNull();
+    expect(dropdown).not.toBeNull();
+    expect(dropdown.hidden).toBe(true);
+
+    toggle.click();
+
+    expect(dropdown.hidden).toBe(false);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+
+    root.remove();
+  });
+
+  it('closes the category menu and applies the selected category', () => {
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+
+    initApp(root);
+
+    const toggle = root.querySelector('[data-role="category-menu-toggle"]');
+    const dropdown = root.querySelector('[data-role="category-menu"]');
+    const allItem = root.querySelector('[data-category=""]');
+
+    toggle.click();
+    expect(dropdown.hidden).toBe(false);
+
+    allItem.click();
+
+    expect(dropdown.hidden).toBe(true);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+
+    root.remove();
+  });
 });

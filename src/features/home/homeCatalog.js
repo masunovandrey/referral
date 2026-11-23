@@ -22,27 +22,45 @@ export function renderSearchInput({ value = '' } = {}) {
   `;
 }
 
-export function renderCategoryChips({ categories = [], selectedCategory = '' } = {}) {
-  const chips = [
+export function renderCategoryMenu({ categories = [], selectedCategory = '' } = {}) {
+  const selectedLabel = selectedCategory || translate('home.catalog.chips.all');
+
+  const items = [
     { value: '', label: translate('home.catalog.chips.all') },
     ...categories.map((category) => ({ value: category, label: category }))
   ];
 
-  const chipHtml = chips
+  const itemsHtml = items
     .map(
-      (chip) => `
+      (item) => `
         <button
           type="button"
-          class="chip${chip.value === selectedCategory ? ' chip--active' : ''}"
-          data-category="${chip.value}"
+          class="chip${item.value === selectedCategory ? ' chip--active' : ''}"
+          data-category="${item.value}"
         >
-          ${chip.label}
+          ${item.label}
         </button>
       `
     )
     .join('');
 
-  return `<div class="catalog-chips">${chipHtml}</div>`;
+  return `
+    <div class="catalog-menu">
+      <button
+        class="catalog-menu__toggle"
+        type="button"
+        data-role="category-menu-toggle"
+        aria-haspopup="menu"
+        aria-expanded="false"
+      >
+        <span class="catalog-menu__icon" aria-hidden="true">☰</span>
+        <span class="catalog-menu__value">${selectedLabel}</span>
+      </button>
+      <div class="catalog-menu__dropdown" data-role="category-menu" hidden>
+        ${itemsHtml}
+      </div>
+    </div>
+  `;
 }
 
 export function renderCompanyCards({ groups = [] } = {}) {

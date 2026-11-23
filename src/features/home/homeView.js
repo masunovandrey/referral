@@ -1,6 +1,6 @@
 import { renderHeader } from '../ui/header.js';
 import { renderLoginModal } from '../ui/loginModal.js';
-import { renderHero, renderSearchInput, renderCategoryChips, renderCompanyCards } from './homeCatalog.js';
+import { renderCategoryMenu, renderHero, renderSearchInput, renderCompanyCards } from './homeCatalog.js';
 
 export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups: [], categories: [], selectedCategory: '', query: '' }, loginOpen = false) {
   const header = renderHeader({
@@ -10,7 +10,7 @@ export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups
 
   const hero = renderHero();
   const searchInput = renderSearchInput({ value: catalog.query });
-  const chips = renderCategoryChips({ categories: catalog.categories, selectedCategory: catalog.selectedCategory });
+  const categoryMenu = renderCategoryMenu({ categories: catalog.categories, selectedCategory: catalog.selectedCategory });
   const catalogContent = renderCompanyCards({ groups: catalog.groups });
 
   return `
@@ -29,8 +29,10 @@ export function renderHomeView(viewModel, emailAuthViewModel, catalog = { groups
           </div>
         ` : ''}
         ${hero}
-        ${searchInput}
-        ${chips}
+        <div class="catalog-toolbar">
+          ${categoryMenu}
+          ${searchInput}
+        </div>
         <div id="public-catalog-container" class="placeholder">
           ${catalogContent}
         </div>

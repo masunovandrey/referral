@@ -540,6 +540,60 @@ h1 {
   color: #52606d;
 }
 
+.catalog-toolbar {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.catalog-menu {
+  position: relative;
+}
+
+.catalog-menu__toggle {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.catalog-menu__icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.catalog-menu__dropdown {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 180px;
+  z-index: 30;
+}
+
+.catalog-menu__dropdown[hidden] {
+  display: none;
+}
+
+.catalog-toolbar .catalog-search__input {
+  flex: 1;
+  min-width: 0;
+}
+
 .catalog-hint {
   margin-top: 0;
   color: #52606d;

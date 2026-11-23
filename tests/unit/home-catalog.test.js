@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderCatalogEmptyState, renderCategoryChips, renderCompanyCards, renderHero, renderSearchInput } from '../../src/features/home/homeCatalog.js';
+import { renderCatalogEmptyState, renderCategoryMenu, renderCompanyCards, renderHero, renderSearchInput } from '../../src/features/home/homeCatalog.js';
 
 describe('homeCatalog', () => {
   it('renders the hero with title and subtitle', () => {
@@ -17,12 +17,24 @@ describe('homeCatalog', () => {
     expect(html).toContain('placeholder="Search by company or category"');
   });
 
-  it('renders category chips with the all chip and selected state', () => {
-    const html = renderCategoryChips({ categories: ['fintech', 'food'], selectedCategory: 'fintech' });
+  it('renders the category menu toggle with the all label when no category is selected', () => {
+    const html = renderCategoryMenu({ categories: ['fintech', 'food'], selectedCategory: '' });
+
+    expect(html).toContain('data-role="category-menu-toggle"');
+    expect(html).toContain('data-role="category-menu"');
+    expect(html).toContain('catalog-menu__toggle');
+    expect(html).toContain('catalog-menu__value');
+    expect(html).toContain('>All<');
+  });
+
+  it('marks the selected category in the menu', () => {
+    const html = renderCategoryMenu({ categories: ['fintech', 'food'], selectedCategory: 'fintech' });
 
     expect(html).toContain('data-category=""');
     expect(html).toContain('data-category="fintech"');
+    expect(html).toContain('data-category="food"');
     expect(html).toContain('chip--active');
+    expect(html).toContain('fintech');
   });
 
   it('renders company cards from groups', () => {

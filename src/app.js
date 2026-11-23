@@ -282,9 +282,29 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
       void loadPublicCatalog(root);
     });
 
-    root.querySelectorAll('.chip').forEach((chip) => {
-      chip.addEventListener('click', () => {
-        catalogCategory = chip.dataset.category ?? '';
+    const categoryMenuToggle = root.querySelector('[data-role="category-menu-toggle"]');
+    categoryMenuToggle?.addEventListener('click', () => {
+      const dropdown = categoryMenuToggle.closest('.catalog-menu')?.querySelector('[data-role="category-menu"]');
+      const isOpen = Boolean(dropdown) && !dropdown.hidden;
+
+      if (dropdown) {
+        dropdown.hidden = isOpen;
+      }
+
+      categoryMenuToggle.setAttribute('aria-expanded', String(!isOpen));
+    });
+
+    root.querySelectorAll('[data-category]').forEach((item) => {
+      item.addEventListener('click', () => {
+        catalogCategory = item.dataset.category ?? '';
+
+        const dropdown = item.closest('[data-role="category-menu"]');
+        if (dropdown) {
+          dropdown.hidden = true;
+        }
+
+        categoryMenuToggle?.setAttribute('aria-expanded', 'false');
+
         void loadPublicCatalog(root);
       });
     });

@@ -72,6 +72,19 @@ describe('renderHomeView', () => {
     expect(html).not.toContain('id="email-auth-form"');
   });
 
+  it('renders the category menu and search input in a toolbar', () => {
+    const html = renderHomeView(
+      buildHomeViewModel(null),
+      buildEmailAuthViewModel('login'),
+      { groups: [], categories: [], selectedCategory: '', query: '' }
+    );
+
+    expect(html).toContain('catalog-toolbar');
+    expect(html).toContain('data-role="category-menu-toggle"');
+    expect(html).toContain('data-role="category-menu"');
+    expect(html).toContain('catalog-search__input');
+  });
+
   it('escapes the identity label', () => {
     const html = renderHomeView(
       buildHomeViewModel({
