@@ -212,6 +212,10 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
       root.querySelector('#open-profile-button')?.addEventListener('click', () => {
         navigateTo(routes.profile);
       });
+
+      root.querySelector('[data-role="open-profile"]')?.addEventListener('click', () => {
+        navigateTo(routes.profile);
+      });
     }
 
     if (viewModel.showVerificationBanner) {
