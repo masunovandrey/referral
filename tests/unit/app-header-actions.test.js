@@ -21,6 +21,10 @@ vi.mock('firebase/auth', () => ({
 }));
 vi.mock('../../src/firebase/app.js', () => ({ firebaseApp: {} }));
 vi.mock('../../src/firebase/firestore.js', () => ({ db: {} }));
+vi.mock('../../src/features/publicRows/publicRows.api.js', () => ({
+  listPublicRows: vi.fn(async () => []),
+  incrementPublicRowClicks: vi.fn(async () => {})
+}));
 vi.mock('../../src/router.js', async (importOriginal) => {
   const actual = await importOriginal();
   return { ...actual, navigateTo: (...args) => mockNavigateTo(...args) };
@@ -83,6 +87,32 @@ describe('app header actions', () => {
     expect(dropdown.hidden).toBe(false);
 
     allItem.click();
+
+    expect(dropdown.hidden).toBe(true);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+
+    root.remove();
+  });
+
+  it('keeps category items clickable after the menu refreshes', async () => {
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+
+    initApp(root);
+
+    const toggle = root.querySelector('[data-role="category-menu-toggle"]');
+    const dropdown = root.querySelector('[data-role="category-menu"]');
+
+    toggle.click();
+    expect(dropdown.hidden).toBe(false);
+
+    dropdown.querySelector('[data-category=""]').click();
+    await Promise.resolve();
+
+    toggle.click();
+    expect(dropdown.hidden).toBe(false);
+
+    dropdown.querySelector('[data-category=""]').click();
 
     expect(dropdown.hidden).toBe(true);
     expect(toggle.getAttribute('aria-expanded')).toBe('false');

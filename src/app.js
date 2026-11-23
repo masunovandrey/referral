@@ -292,19 +292,20 @@ function renderHomePage(root, user, emailAuthMode, setEmailAuthMode, refreshUser
       categoryMenuToggle.setAttribute('aria-expanded', String(!isOpen));
     });
 
-    root.querySelectorAll('[data-category]').forEach((item) => {
-      item.addEventListener('click', () => {
-        catalogCategory = item.dataset.category ?? '';
+    const categoryMenu = root.querySelector('.catalog-menu');
+    const categoryMenuDropdown = categoryMenu?.querySelector('[data-role="category-menu"]');
+    categoryMenuDropdown?.addEventListener('click', (event) => {
+      const item = event.target.closest('[data-category]');
+      if (!item) {
+        return;
+      }
 
-        const dropdown = item.closest('[data-role="category-menu"]');
-        if (dropdown) {
-          dropdown.hidden = true;
-        }
+      catalogCategory = item.dataset.category ?? '';
 
-        categoryMenuToggle?.setAttribute('aria-expanded', 'false');
+      categoryMenuDropdown.hidden = true;
+      categoryMenuToggle?.setAttribute('aria-expanded', 'false');
 
-        void loadPublicCatalog(root);
-      });
+      void loadPublicCatalog(root);
     });
 
     void loadPublicCatalog(root);
